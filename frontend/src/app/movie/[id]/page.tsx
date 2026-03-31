@@ -32,8 +32,9 @@ export default function MovieDetailPage() {
     const handleAddWatchlist = async () => {
         try {
             const token = localStorage.getItem("token");
-            if (token) {
-                await addToWatchlist(movieId, token);
+            const userId = localStorage.getItem("userId");
+            if (token && userId) {
+                await addToWatchlist(movieId, parseInt(userId, 10), token);
                 setInWatchlist(true);
             }
         } catch (e) {

@@ -43,7 +43,7 @@ const getHeaders = (token?: string | null) => {
 };
 
 export async function fetchMovies(userId?: string): Promise<Record<string, MovieSummary[]>> {
-    const url = userId ? `${NODE_BASE}/movies/home?userId=${userId}` : `${NODE_BASE}/movies/home`;
+    const url = userId ? `${PYTHON_BASE}/smart/home_feed?user_id=${userId}` : `${PYTHON_BASE}/smart/home_feed`;
     const res = await fetch(url, { 
         headers: getHeaders(),
         cache: "no-store", 
@@ -54,7 +54,7 @@ export async function fetchMovies(userId?: string): Promise<Record<string, Movie
 }
 
 export async function fetchMovieDetail(id: number): Promise<MovieDetail> {
-    const res = await fetch(`${NODE_BASE}/movies/${id}`, { 
+    const res = await fetch(`${PYTHON_BASE}/movies/${id}`, { 
         headers: { "Bypass-Tunnel-Reminder": "true" },
         cache: "no-store" 
     });
@@ -118,11 +118,11 @@ export async function createWatchParty(movieId: number, userId?: string) {
     return res.json();
 }
 
-export async function addToWatchlist(movieId: number, token: string) {
-    const res = await fetch(`${NODE_BASE}/movies/watchlist`, {
+export async function addToWatchlist(movieId: number, userId: number, token: string) {
+    const res = await fetch(`${PYTHON_BASE}/watchlist/add`, {
         method: "POST",
         headers: getHeaders(token),
-        body: JSON.stringify({ movieId })
+        body: JSON.stringify({ movie_id: movieId, user_id: userId })
     });
     return res.json();
 }
