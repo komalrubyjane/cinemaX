@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
-from database import get_db, Movie
+from database import get_db
 import pandas as pd
 import json
 import random
@@ -226,7 +226,7 @@ def fetch_extra_roles(title: str, cast_names: list) -> dict:
 
 
 def background_scrape_and_update(movie_id: int, title: str, clean_title: str, genres_list: list, year: int, duration: int, languages: list, description: str, poster_url: str):
-    from database import SessionLocal
+    from database import get_supabase
     # Fetch real cast
     tmdb_data = fetch_cast_from_tmdb(movie_id)
     cast_names = tmdb_data["cast_names"]
@@ -242,60 +242,68 @@ def background_scrape_and_update(movie_id: int, title: str, clean_title: str, ge
     cast_str = ",".join(cast_names) if cast_names else ""
     extra_roles = fetch_extra_roles(clean_title, cast_names)
 
-    with SessionLocal() as db_session:
-        db_movie = db_session.query(Movie).filter(Movie.movie_id == movie_id).first()
-        if not db_movie:
-            new_movie = Movie(
-                movie_id=movie_id,
-                title=clean_title,
-                genres="|".join(genres_list),
-                duration=duration,
-                description=description,
-                rating=round(random.uniform(7.0, 9.5), 1),
-                release_year=year,
-                languages=",".join(languages),
-                poster_url=poster_url,
-                cast=cast_str,
-                director=director,
-                hero=extra_roles["hero"],
-                heroine=extra_roles["heroine"],
-                producers=",".join(extra_roles["producers"]) if isinstance(extra_roles["producers"], list) else extra_roles["producers"]
-            )
-            db_session.add(new_movie)
+    db_cli = get_supabase()
+    
+    try:
+        res = db_cli.table("movies").select("*").eq("movie_id", movie_id).execute().data
+        
+        prods = extra_roles.get("producers", ["Unknown"])
+        
+        movie_data = {
+            "movie_id": movie_id,
+            "title": clean_title,
+            "genres": "|".join(genres_list),
+            "duration": duration,
+            "description": description,
+            "rating": round(random.uniform(7.0, 9.5), 1),
+            "release_year": year,
+            "languages": ",".join(languages),
+            "poster_url": poster_url,
+            "cast": cast_str,
+            "director": director,
+            "hero": extra_roles.get("hero", "Unknown"),
+            "heroine": extra_roles.get("heroine", "Unknown"),
+            "producers": ",".join(prods) if isinstance(prods, list) else prods
+        }
+        
+        if not res:
+            db_cli.table("movies").insert(movie_data).execute()
         else:
-            db_movie.cast = cast_str
-            db_movie.director = director
-            db_movie.hero = extra_roles["hero"]
-            db_movie.heroine = extra_roles["heroine"]
-            db_movie.producers = ",".join(extra_roles["producers"]) if isinstance(extra_roles["producers"], list) else extra_roles["producers"]
-        try:
-            db_session.commit()
-        except:
-            db_session.rollback()
+            db_cli.table("movies").update({
+                "cast": cast_str,
+                "director": director,
+                "hero": extra_roles.get("hero", "Unknown"),
+                "heroine": extra_roles.get("heroine", "Unknown"),
+                "producers": ",".join(prods) if isinstance(prods, list) else prods
+            }).eq("id", res[0]["id"]).execute()
+    except Exception as e:
+        print(f"Error saving movie to Supabase: {e}")
 
 @movie_router.get("/{movie_id}")
-def get_movie_details(movie_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+def get_movie_details(movie_id: int, background_tasks: BackgroundTasks, db = Depends(get_db)):
     # 1. First check the new HD Database
-    db_movie = db.query(Movie).filter(Movie.movie_id == movie_id).first()
+    db_movie_list = db.table("movies").select("*").eq("movie_id", movie_id).execute().data
+    db_movie = db_movie_list[0] if db_movie_list else None
 
     # 2. If it exists in DB with full data including real cast (not placeholder), return it
-    if db_movie and db_movie.description and db_movie.cast and "Actor 1" not in db_movie.cast:
+    if db_movie and db_movie.get("description") and db_movie.get("cast") and "Actor 1" not in db_movie.get("cast", ""):
+        cast_str = db_movie.get("cast", "")
         return {
-            "movie_id": db_movie.movie_id,
-            "title": db_movie.title,
-            "genres": db_movie.genres.split("|") if db_movie.genres else ["Drama"],
-            "rating": db_movie.rating or round(random.uniform(6.5, 9.5), 1),
-            "release_year": db_movie.release_year or 2020,
-            "duration": db_movie.duration or 120,
-            "languages": db_movie.languages.split(",") if db_movie.languages else ["English", "Hindi"],
-            "description": db_movie.description,
-            "trailer_url": f"https://www.youtube.com/results?search_query={db_movie.title.replace(' ', '+')}+trailer",
+            "movie_id": db_movie.get("movie_id"),
+            "title": db_movie.get("title"),
+            "genres": db_movie.get("genres", "").split("|") if db_movie.get("genres") else ["Drama"],
+            "rating": db_movie.get("rating") or round(random.uniform(6.5, 9.5), 1),
+            "release_year": db_movie.get("release_year") or 2020,
+            "duration": db_movie.get("duration") or 120,
+            "languages": db_movie.get("languages", "").split(",") if db_movie.get("languages") else ["English", "Hindi"],
+            "description": db_movie.get("description"),
+            "trailer_url": f"https://www.youtube.com/results?search_query={db_movie.get('title', '').replace(' ', '+')}+trailer",
             "poster": f"/api/ai/poster/{movie_id}",
-            "cast": [{"name": c.strip(), "image": f"https://ui-avatars.com/api/?name={urllib.parse.quote(c.strip())}&background=random&color=fff&size=200"} for c in db_movie.cast.split(",")] if db_movie.cast else [],
-            "director": db_movie.director if hasattr(db_movie, 'director') and db_movie.director else "Unknown",
-            "hero": db_movie.hero if hasattr(db_movie, 'hero') and db_movie.hero else "Unknown",
-            "heroine": db_movie.heroine if hasattr(db_movie, 'heroine') and db_movie.heroine else "Unknown",
-            "producers": db_movie.producers.split(",") if hasattr(db_movie, 'producers') and db_movie.producers else ["Unknown"],
+            "cast": [{"name": c.strip(), "image": f"https://ui-avatars.com/api/?name={urllib.parse.quote(c.strip())}&background=random&color=fff&size=200"} for c in cast_str.split(",")] if cast_str else [],
+            "director": db_movie.get('director') or "Unknown",
+            "hero": db_movie.get('hero') or "Unknown",
+            "heroine": db_movie.get('heroine') or "Unknown",
+            "producers": db_movie.get('producers', "").split(",") if db_movie.get('producers') else ["Unknown"],
         }
 
     # 3. Look up the movie from CSV for fast fallback return

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from database import get_db, WatchHistory, Movie
+from database import get_db, WatchHistory
 from pathlib import Path
 import pandas as pd
 import random
@@ -131,9 +131,11 @@ def get_kids_recommendations():
     return _format(filtered.sample(frac=1, random_state=random.randint(1, 999)))
 
 @smart_router.get("/behavior/{user_id}")
-def get_behavior_profile(user_id: int, db: Session = Depends(get_db)):
+def get_behavior_profile(user_id: int, db = Depends(get_db)):
     """Analyze user's watching behavior and return insights"""
-    history = db.query(WatchHistory).filter(WatchHistory.user_id == user_id).all()
+    raw_history = db.table("watch_history").select("*").eq("user_id", user_id).execute().data
+    from database import WatchHistory
+    history = [WatchHistory(d) for d in raw_history]
     
     if not history:
         # Return default profile for new users
@@ -246,7 +248,7 @@ def get_behavior_profile(user_id: int, db: Session = Depends(get_db)):
     }
 
 @smart_router.get("/home_feed")
-def get_home_feed(user_id: int = None, db: Session = Depends(get_db)):
+def get_home_feed(user_id: int = None, db = Depends(get_db)):
     """Returns categorized movies for Netflix-style rows on the Home Page.
     Uses vectorized str.contains() instead of slow per-row df.apply()."""
     df = _load_movies()
@@ -268,7 +270,9 @@ def get_home_feed(user_id: int = None, db: Session = Depends(get_db)):
 
     # 1. Continue Watching
     if user_id:
-        history = db.query(WatchHistory).filter(WatchHistory.user_id == user_id).order_by(WatchHistory.timestamp.desc()).all()
+        raw_history = db.table("watch_history").select("*").eq("user_id", user_id).order("timestamp", desc=True).execute().data
+        from database import WatchHistory
+        history = [WatchHistory(d) for d in raw_history]
         cw = []
         seen_h = set()
         for h in history:
@@ -286,7 +290,8 @@ def get_home_feed(user_id: int = None, db: Session = Depends(get_db)):
     # 2. My List
     if user_id:
         from database import Watchlist
-        wl = db.query(Watchlist).filter(Watchlist.user_id == user_id).order_by(Watchlist.timestamp.desc()).all()
+        raw_wl = db.table("watchlist").select("*").eq("user_id", user_id).order("timestamp", desc=True).execute().data
+        wl = [Watchlist(d) for d in raw_wl]
         wl_movies = []
         for w in wl[:15]:
             row = df[df["movieId"] == w.movie_id]

@@ -3,7 +3,7 @@ from typing import List, Dict
 import json
 import uuid
 import time
-from database import SessionLocal, WatchParty, User
+from database import WatchParty, User
 
 party_router = APIRouter(prefix="/api/party", tags=["party"])
 

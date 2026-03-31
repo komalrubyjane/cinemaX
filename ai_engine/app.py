@@ -51,21 +51,20 @@ except Exception as _e:
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 # Seed default users if they don't exist
-from database import SessionLocal
+from database import get_supabase
 try:
-    with SessionLocal() as db:
-        admin_user = db.query(User).filter(User.username == "admin").first()
-        if not admin_user:
-            db.add(User(username="admin", password="1234", age=25)) # Default admin password
-        else:
-            admin_user.password = "1234"
-            
-        normal_user = db.query(User).filter(User.username == "user").first()
-        if not normal_user:
-            db.add(User(username="user", password="1234", age=20))
-        else:
-            normal_user.password = "1234"
-        db.commit()
+    db_cli = get_supabase()
+    res_admin = db_cli.table("users").select("*").eq("username", "admin").execute().data
+    if not res_admin:
+        db_cli.table("users").insert({"username": "admin", "password": "1234", "age": 25}).execute()
+    else:
+        db_cli.table("users").update({"password": "1234"}).eq("username", "admin").execute()
+        
+    res_user = db_cli.table("users").select("*").eq("username", "user").execute().data
+    if not res_user:
+        db_cli.table("users").insert({"username": "user", "password": "1234", "age": 20}).execute()
+    else:
+        db_cli.table("users").update({"password": "1234"}).eq("username", "user").execute()
 except Exception as _e:
     print(f"[Startup] Warning: could not seed default users — {_e}")
 
@@ -88,12 +87,12 @@ def allowed_ratings(age: int, family_mode: bool, children_mode: bool = False) ->
         return ["G", "PG", "PG-13", "R"]
     return ["G", "PG", "PG-13", "R", "NC-17"]
 
-def get_user_age(user_id: int, db: Session = None) -> int:
+def get_user_age(user_id: int, db = None) -> int:
     """Get user age from DB. Default 18."""
     if db:
-        user = db.query(User).filter(User.id == user_id).first()
-        if user:
-            return user.age
+        res = db.table("users").select("age").eq("id", user_id).execute().data
+        if res:
+            return int(res[0].get("age", 18))
     
     # Fallback to CSV if user not found in DB or DB not provided
     users_path = BASE_DIR / "data" / "users.csv"
@@ -414,74 +413,66 @@ async def signup_page(request: Request):
     return templates.TemplateResponse("signup.html", {"request": request})
 
 @app.post("/signup")
-def signup(data: LoginData, db: Session = Depends(get_db)):
-    if db.query(User).filter(User.username == data.username).first():
+def signup(data: LoginData, db = Depends(get_db)):
+    res = db.table("users").select("*").eq("username", data.username).execute().data
+    if res:
         raise HTTPException(status_code=400, detail="Username already exists")
-    new_user = User(username=data.username, password=data.password, age=data.age or 18)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return {"status": "success", "userId": new_user.id, "age": new_user.age}
+    new_user = {"username": data.username, "password": data.password, "age": data.age or 18}
+    insert_res = db.table("users").insert(new_user).execute().data
+    if not insert_res:
+        raise HTTPException(status_code=500, detail="Failed to create user")
+    return {"status": "success", "userId": insert_res[0]["id"], "age": insert_res[0].get("age", 18)}
 
 @app.post("/login")
-def login(data: LoginData, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == data.username).first()
-    if user and user.password == data.password:
-        return {"status": "success", "userId": user.id, "age": user.age}
+def login(data: LoginData, db = Depends(get_db)):
+    res = db.table("users").select("*").eq("username", data.username).execute().data
+    if res and res[0].get("password") == data.password:
+        return {"status": "success", "userId": res[0]["id"], "age": res[0].get("age", 18)}
     return {"status": "failed"}
 
 @app.post("/api/watch_progress")
-def update_watch_progress(data: WatchProgressData, db: Session = Depends(get_db)):
-    history = db.query(WatchHistory).filter(
-        WatchHistory.user_id == data.user_id,
-        WatchHistory.movie_id == data.movie_id
-    ).first()
-    
-    if history:
-        history.progress_percent = data.progress_percent
+def update_watch_progress(data: WatchProgressData, db = Depends(get_db)):
+    res = db.table("watch_history").select("*").eq("user_id", data.user_id).eq("movie_id", data.movie_id).execute().data
+    now_iso = datetime.utcnow().isoformat()
+    if res:
+        db.table("watch_history").update({"progress_percent": data.progress_percent, "timestamp": now_iso}).eq("id", res[0]["id"]).execute()
     else:
-        history = WatchHistory(
-            user_id=data.user_id,
-            movie_id=data.movie_id,
-            progress_percent=data.progress_percent
-        )
-        db.add(history)
-    
-    # Update timestamp for Binge Tracking
-    history.timestamp = datetime.utcnow()
-    db.commit()
+        db.table("watch_history").insert({
+            "user_id": data.user_id,
+            "movie_id": data.movie_id,
+            "progress_percent": data.progress_percent,
+            "timestamp": now_iso
+        }).execute()
     
     # Check for Binge
     today = datetime.utcnow().date()
-    today_records = db.query(WatchHistory).filter(WatchHistory.user_id == data.user_id).all()
+    today_records = db.table("watch_history").select("*").eq("user_id", data.user_id).execute().data
     
     binge_minutes = 0
     for r in today_records:
-        if r.timestamp.date() == today:
-            binge_minutes += (r.progress_percent / 100) * 120  # Assume 120 mins avg movie length
+        ts = r.get("timestamp")
+        if ts:
+            try:
+                dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                if dt.date() == today:
+                    binge_minutes += (float(r.get("progress_percent", 0)) / 100) * 120  # Assume 120 mins avg movie length
+            except ValueError:
+                pass
             
     take_a_break = binge_minutes > 180
     return {"status": "success", "take_a_break": take_a_break, "binge_minutes": int(binge_minutes)}
 
 @app.post("/api/watchlist/add")
-def add_to_watchlist(data: WatchlistData, db: Session = Depends(get_db)):
-    exists = db.query(Watchlist).filter(
-        Watchlist.user_id == data.user_id,
-        Watchlist.movie_id == data.movie_id
-    ).first()
+def add_to_watchlist(data: WatchlistData, db = Depends(get_db)):
+    exists = db.table("watchlist").select("*").eq("user_id", data.user_id).eq("movie_id", data.movie_id).execute().data
     if not exists:
-        db.add(Watchlist(user_id=data.user_id, movie_id=data.movie_id))
-        db.add(Activity(user_id=data.user_id, action="added_to_watchlist", movie_id=data.movie_id))
-        db.commit()
+        db.table("watchlist").insert({"user_id": data.user_id, "movie_id": data.movie_id}).execute()
+        db.table("activity").insert({"user_id": data.user_id, "action": "added_to_watchlist", "movie_id": data.movie_id}).execute()
     return {"status": "success"}
 
 @app.post("/api/watchlist/remove")
-def remove_from_watchlist(data: WatchlistData, db: Session = Depends(get_db)):
-    db.query(Watchlist).filter(
-        Watchlist.user_id == data.user_id,
-        Watchlist.movie_id == data.movie_id
-    ).delete()
-    db.commit()
+def remove_from_watchlist(data: WatchlistData, db = Depends(get_db)):
+    db.table("watchlist").delete().eq("user_id", data.user_id).eq("movie_id", data.movie_id).execute()
     return {"status": "success"}
 
 @app.get("/home", response_class=HTMLResponse)
@@ -506,25 +497,26 @@ async def home(
     movies = get_movies(allowed=allowed)
     
     # Retrieve continue watching
-    history_records = db.query(WatchHistory).filter(WatchHistory.user_id == userId).order_by(WatchHistory.timestamp.desc()).limit(10).all()
+    history_records = db.table("watch_history").select("*").eq("user_id", userId).order("timestamp", desc=True).limit(10).execute().data
     continue_watching = []
     
     # Retrieve Watchlist
-    watchlist_records = db.query(Watchlist).filter(Watchlist.user_id == userId).all()
-    watchlist_ids = {w.movie_id for w in watchlist_records}
+    watchlist_records = db.table("watchlist").select("movie_id").eq("user_id", userId).execute().data
+    watchlist_ids = {w["movie_id"] for w in watchlist_records}
     
     df = _get_movies_df()
     if not df.empty:
         for h in history_records:
-            if h.progress_percent > 0 and h.progress_percent < 95:
-                row = df[df["movieId"] == h.movie_id]
+            prog = float(h.get("progress_percent", 0))
+            if prog > 0 and prog < 95:
+                row = df[df["movieId"] == h["movie_id"]]
                 if not row.empty:
                     title = row.iloc[0]["title"]
                     continue_watching.append({
-                        "movieId": h.movie_id,
+                        "movieId": h["movie_id"],
                         "title": title,
-                        "progress": h.progress_percent,
-                        "poster": poster_for_movie(h.movie_id)
+                        "progress": prog,
+                        "poster": poster_for_movie(h["movie_id"])
                     })
 
     
@@ -544,39 +536,42 @@ async def home(
     )
 
 @app.get("/share/watchlist/{user_id}", response_class=HTMLResponse)
-async def share_watchlist(request: Request, user_id: int, db: Session = Depends(get_db)):
+async def share_watchlist(request: Request, user_id: int, db = Depends(get_db)):
     """Publicly viewable watchlist."""
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
+    users = db.table("users").select("*").eq("id", user_id).execute().data
+    if not users:
         raise HTTPException(status_code=404, detail="User not found")
         
-    records = db.query(Watchlist).filter(Watchlist.user_id == user_id).all()
+    records = db.table("watchlist").select("*").eq("user_id", user_id).execute().data
     df = _get_movies_df()
     shared_movies = []
     
     if not df.empty:
         for r in records:
-            row = df[df["movieId"] == r.movie_id]
+            row = df[df["movieId"] == r["movie_id"]]
             if not row.empty:
                 shared_movies.append({
-                    "movieId": r.movie_id,
+                    "movieId": r["movie_id"],
                     "title": row.iloc[0]["title"],
-                    "poster": poster_for_movie(r.movie_id)
+                    "poster": poster_for_movie(r["movie_id"])
                 })
                 
     # Track this action
-    db.add(Activity(user_id=user_id, action="shared_watchlist_viewed"))
-    db.commit()
+    db.table("activity").insert({"user_id": user_id, "action": "shared_watchlist_viewed"}).execute()
     
     return templates.TemplateResponse("shared_watchlist.html", {
-        "request": request, "username": user.username, "movies": shared_movies
+        "request": request, "username": users[0].get("username", "Guest"), "movies": shared_movies
     })
 
 @app.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
-    users_count = db.query(User).count()
-    watch_count = db.query(WatchHistory).count()
-    activities = db.query(Activity).order_by(Activity.timestamp.desc()).limit(20).all()
+async def admin_dashboard(request: Request, db = Depends(get_db)):
+    users_resp = db.table("users").select("id", count="exact").execute()
+    users_count = users_resp.count if hasattr(users_resp, 'count') and users_resp.count is not None else 0
+    
+    watch_resp = db.table("watch_history").select("id", count="exact").execute()
+    watch_count = watch_resp.count if hasattr(watch_resp, 'count') and watch_resp.count is not None else 0
+    
+    activities = db.table("activity").select("*").order("timestamp", desc=True).limit(20).execute().data
     
     return templates.TemplateResponse("admin.html", {
         "request": request,
@@ -606,8 +601,8 @@ def recommend_multi(
         family_mode = False
         
     # Get youngest age for strictness
-    users = db.query(User).filter(User.id.in_(user_id_list)).all()
-    min_age = age if age else min([u.age for u in users] + [18])
+    users = db.table("users").select("age").in_("id", user_id_list).execute().data
+    min_age = age if age else min([int(u.get("age", 18)) for u in users] + [18])
     allowed = allowed_ratings(min_age, family_mode, children_mode)
 
     movies_df = _get_movies_df()
@@ -765,8 +760,8 @@ def recommend(
     mood_genres = mood_filters.get(mood.lower(), [])
     
     # Fetch watch history
-    history_records = db.query(WatchHistory).filter(WatchHistory.user_id == user_id).all()
-    watched_movie_ids = {h.movie_id for h in history_records}
+    history_records = db.table("watch_history").select("movie_id").eq("user_id", user_id).execute().data
+    watched_movie_ids = {h["movie_id"] for h in history_records}
     watched_genres = {}
     for mid in watched_movie_ids:
         row = movies_df[movies_df["movieId"] == mid]
@@ -776,9 +771,8 @@ def recommend(
 
     total_watched = sum(watched_genres.values()) or 1
     
-    from database import UserPreference
-    prefs = db.query(UserPreference).filter(UserPreference.user_id == user_id).all()
-    dropped_genres = {p.genre for p in prefs if not p.is_liked}
+    prefs = db.table("user_preference").select("*").eq("user_id", user_id).execute().data
+    dropped_genres = {p["genre"] for p in prefs if not p.get("is_liked", True)}
 
     is_late_night = local_hour is not None and (local_hour >= 22 or local_hour <= 5)
     is_morning = local_hour is not None and (6 <= local_hour <= 11)
@@ -884,8 +878,8 @@ def get_user_preferences(user_id: int, db: Session = Depends(get_db)):
     if movies_df.empty:
         return {"distribution": {}, "dropped": []}
         
-    history = db.query(WatchHistory).filter(WatchHistory.user_id == user_id).all()
-    watched_mids = {h.movie_id for h in history}
+    history = db.table("watch_history").select("movie_id").eq("user_id", user_id).execute().data
+    watched_mids = {h["movie_id"] for h in history}
     
     genre_counts = {}
     for mid in watched_mids:
@@ -897,25 +891,19 @@ def get_user_preferences(user_id: int, db: Session = Depends(get_db)):
     total = sum(genre_counts.values()) or 1
     distribution = {g: int((c/total)*100) for g, c in genre_counts.items()}
     
-    from database import UserPreference
-    prefs = db.query(UserPreference).filter(UserPreference.user_id == user_id).all()
-    dropped = [p.genre for p in prefs if not p.is_liked]
+    prefs = db.table("user_preference").select("*").eq("user_id", user_id).execute().data
+    dropped = [p["genre"] for p in prefs if not p.get("is_liked", True)]
     
     return {"distribution": distribution, "dropped": dropped}
 
 @app.post("/api/user/preferences")
-def toggle_user_preference(data: PreferenceUpdateData, db: Session = Depends(get_db)):
-    from database import UserPreference
-    pref = db.query(UserPreference).filter(
-        UserPreference.user_id == data.user_id,
-        UserPreference.genre == data.genre
-    ).first()
+def toggle_user_preference(data: PreferenceUpdateData, db = Depends(get_db)):
+    res = db.table("user_preference").select("*").eq("user_id", data.user_id).eq("genre", data.genre).execute().data
     
-    if pref:
-        pref.is_liked = data.is_liked
+    if res:
+        db.table("user_preference").update({"is_liked": data.is_liked}).eq("id", res[0]["id"]).execute()
     else:
-        db.add(UserPreference(user_id=data.user_id, genre=data.genre, is_liked=data.is_liked))
-    db.commit()
+        db.table("user_preference").insert({"user_id": data.user_id, "genre": data.genre, "is_liked": data.is_liked}).execute()
     return {"status": "success"}
 
 class ChatQuery(BaseModel):

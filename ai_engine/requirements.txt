@@ -12,4 +12,4 @@ passlib[bcrypt]
 bcrypt
 websockets
 aiofiles
-requests
+requestssupabase

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import get_db, User
 from passlib.context import CryptContext
@@ -49,48 +48,55 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 @auth_router.post("/signup")
-def signup(data: SignupData, db: Session = Depends(get_db)):
-    # Single database query to check for existing username/email
-    existing_user = db.query(User).filter(
-        (User.username == data.username) | (User.email == data.email)
-    ).first()
-    
-    if existing_user:
-        if existing_user.username == data.username:
+def signup(data: SignupData, db = Depends(get_db)):
+    # Check if username or email exists
+    res = db.table("users").select("*").or_(f"username.eq.{data.username},email.eq.{data.email}").execute()
+    existing_users = res.data
+
+    if existing_users:
+        user_dict = existing_users[0]
+        if user_dict.get("username") == data.username:
             raise HTTPException(status_code=400, detail="Username already exists")
         else:
             raise HTTPException(status_code=400, detail="Email already exists")
         
     hashed_password = get_password_hash(data.password)
-    new_user = User(
-        username=data.username,
-        email=data.email,
-        password=hashed_password,
-        age=data.age,
-        preferred_genres=data.preferred_genres
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
     
-    access_token = create_access_token(data={"sub": str(new_user.id)})
-    return {"status": "success", "token": access_token, "userId": new_user.id}
+    # Insert new user
+    new_user_data = {
+        "username": data.username,
+        "email": data.email,
+        "password": hashed_password,
+        "age": data.age,
+        "preferred_genres": data.preferred_genres
+    }
+    
+    insert_res = db.table("users").insert(new_user_data).execute()
+    if not insert_res.data:
+        raise HTTPException(status_code=500, detail="Failed to create user")
+        
+    new_user = insert_res.data[0]
+    
+    access_token = create_access_token(data={"sub": str(new_user["id"])})
+    return {"status": "success", "token": access_token, "userId": new_user["id"]}
 
 @auth_router.post("/login")
-def login(data: LoginData, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == data.username).first()
-    # Check if hashed or plain (for legacy seeded users)
-    if not user:
+def login(data: LoginData, db = Depends(get_db)):
+    res = db.table("users").select("*").eq("username", data.username).execute()
+    users = res.data
+
+    if not users:
         raise HTTPException(status_code=401, detail="Invalid username or password")
         
-    if user.password == data.password or verify_password(data.password, user.password):
-        # Found user, issue token
-        access_token = create_access_token(data={"sub": str(user.id)})
-        return {"status": "success", "token": access_token, "userId": user.id}
+    user = users[0]
+    
+    if user.get("password") == data.password or verify_password(data.password, user.get("password", "")):
+        access_token = create_access_token(data={"sub": str(user["id"])})
+        return {"status": "success", "token": access_token, "userId": user["id"]}
     else:
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
-def get_current_user_id(token: str, db: Session = Depends(get_db)):
+def get_current_user_id(token: str, db = Depends(get_db)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = int(payload.get("sub"))
