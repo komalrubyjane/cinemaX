@@ -17,19 +17,28 @@ export default function MovieDetailPage() {
     const [inWatchlist, setInWatchlist] = useState(false);
     const [partyLink, setPartyLink] = useState<string | null>(null);
     const [castData, setCastData] = useState<any>(null);
+    const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
-        async function load() {
-            const [detail, similarMovies] = await Promise.all([
-                fetchMovieDetail(movieId),
-                fetchSimilarMovies(movieId),
-            ]);
-            setMovie(detail);
-            setSimilar(similarMovies || []);
-            // Load cast separately (async, non-blocking)
-            fetchMovieCast(movieId).then(data => setCastData(data)).catch(() => {});
-        }
-        load();
+        // Load movie detail FIRST (instant return from CSV — shows page right away)
+        fetchMovieDetail(movieId)
+            .then(detail => {
+                setMovie(detail);
+            })
+            .catch(err => {
+                console.error("Movie detail fetch failed:", err);
+                setLoadError(true);
+            });
+
+        // Load similar movies independently (don't block the page)
+        fetchSimilarMovies(movieId)
+            .then(data => setSimilar(data || []))
+            .catch(() => setSimilar([]));
+
+        // Load cast data independently
+        fetchMovieCast(movieId)
+            .then(data => setCastData(data))
+            .catch(() => {});
     }, [movieId]);
 
     const handleAddWatchlist = async () => {
@@ -51,14 +60,38 @@ export default function MovieDetailPage() {
         setPartyLink(`/party/${result.room_id}?movie=${movieId}`);
     };
 
+    if (loadError) {
+        return (
+            <main className="min-h-screen flex items-center justify-center">
+                <Navbar />
+                <div className="text-center pt-24">
+                    <h2 className="text-2xl font-bold text-white mb-3">Could not load movie</h2>
+                    <p className="text-zinc-400 mb-6">The backend is warming up. Please try again in a moment.</p>
+                    <button onClick={() => { setLoadError(false); window.location.reload(); }} className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold transition">
+                        Retry
+                    </button>
+                </div>
+            </main>
+        );
+    }
+
     if (!movie) {
         return (
             <main className="min-h-screen">
                 <Navbar />
                 <div className="pt-24 px-12">
-                    <div className="w-full h-[60vh] shimmer rounded-2xl mb-8" />
-                    <div className="w-1/3 h-10 shimmer rounded-lg mb-4" />
-                    <div className="w-2/3 h-6 shimmer rounded-lg" />
+                    {/* Netflix-style skeleton loader */}
+                    <div className="w-full h-[60vh] bg-zinc-800 animate-pulse rounded-xl mb-8" />
+                    <div className="flex gap-8">
+                        <div className="w-[200px] h-[300px] bg-zinc-800 animate-pulse rounded-xl flex-shrink-0" />
+                        <div className="flex-1 space-y-4 pt-4">
+                            <div className="w-1/2 h-10 bg-zinc-800 animate-pulse rounded" />
+                            <div className="w-1/4 h-6 bg-zinc-800 animate-pulse rounded" />
+                            <div className="w-full h-4 bg-zinc-800 animate-pulse rounded" />
+                            <div className="w-full h-4 bg-zinc-800 animate-pulse rounded" />
+                            <div className="w-3/4 h-4 bg-zinc-800 animate-pulse rounded" />
+                        </div>
+                    </div>
                 </div>
             </main>
         );
