@@ -7,9 +7,14 @@ Falls back gracefully for new/cold-start users.
 from pathlib import Path
 import pandas as pd
 import numpy as np
-import joblib
 import random
 import threading
+
+HAS_ML = True
+try:
+    import joblib
+except ImportError:
+    HAS_ML = False
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -97,7 +102,7 @@ def _build():
     model_path   = BASE_DIR / "model"  / "model.pkl"
 
     # ── Step 1: Try loading pre-trained model ──
-    if model_path.exists():
+    if model_path.exists() and HAS_ML:
         try:
             data = joblib.load(str(model_path))
             _MODEL_DATA.update(data)
@@ -129,7 +134,7 @@ def _build():
     user_index    = _MODEL_DATA.get("user_index")   # pd.Index of user IDs
     movie_index   = _MODEL_DATA.get("movie_index")  # pd.Index of movie IDs
 
-    if svd is not None and latent_matrix is not None and user_index is not None:
+    if svd is not None and latent_matrix is not None and user_index is not None and HAS_ML:
         recs: dict[int, list[int]] = {}
         print(f"[Recommender] Pre-computing recs for {len(user_index)} users...")
         # pred_matrix[user_idx, :] = estimated ratings for all items
