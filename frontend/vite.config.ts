@@ -10,7 +10,33 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
+      // Node.js backend routes → port 5001
+      '/api/auth': {
+        target: 'http://127.0.0.1:5001',
+        changeOrigin: true,
+      },
+      '/api/backend': {
+        target: 'http://127.0.0.1:5001',
+        changeOrigin: true,
+      },
+      '/api/profiles': {
+        target: 'http://127.0.0.1:5001',
+        changeOrigin: true,
+      },
+      '/api/movies': {
+        target: 'http://127.0.0.1:5001',
+        changeOrigin: true,
+      },
+      '/api/health': {
+        target: 'http://127.0.0.1:5001',
+        changeOrigin: true,
+      },
+      // Python AI engine routes → port 8000
+      '/api/ai': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/api/poster': {
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
@@ -18,7 +44,6 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
-
     }
   }
 })

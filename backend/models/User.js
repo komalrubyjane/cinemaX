@@ -15,8 +15,10 @@ const profileSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-    supabaseId: { type: String, required: true, unique: true },
-    email: { type: String, required: true },
+    supabaseId: { type: String, sparse: true, unique: true },
+    username: { type: String, unique: true, sparse: true },
+    passwordHash: { type: String },
+    email: { type: String },
     phone: { type: String },
     profiles: [profileSchema]
 }, { timestamps: true });

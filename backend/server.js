@@ -28,12 +28,10 @@ const startDB = async () => {
         await mongoose.connect(MONGO_URI);
         console.log('Connected to MongoDB');
     } catch (err) {
-        console.warn('MongoDB connection failed. Starting fallback in-memory database...');
-        const { MongoMemoryServer } = require('mongodb-memory-server');
-        const mongoServer = await MongoMemoryServer.create();
-        const fallbackUri = mongoServer.getUri();
-        await mongoose.connect(fallbackUri);
-        console.log('Connected to Fallback In-Memory MongoDB');
+        // On Vercel / serverless, mongodb-memory-server cannot download binaries.
+        // Log the error but let the app start — routes will return 503 if DB is needed.
+        console.warn(`[DB] MongoDB connection failed: ${err.message}`);
+        console.warn('[DB] Running without database — auth is handled by Python service on Vercel.');
     }
 };
 startDB();
@@ -61,9 +59,12 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// Only bind a port when running locally (not on Vercel serverless)
+if (!process.env.VERCEL) {
+    server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
 
 // Export app for completely standalone Vercel Serverless deployment
 module.exports = app;
