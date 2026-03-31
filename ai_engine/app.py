@@ -250,6 +250,24 @@ def scrape_poster_url(movie_id: int) -> str | None:
 
     tmdb_id = _get_tmdb_id(movie_id)
     if not tmdb_id:
+        # Fallback to Wikipedia for regional/Indian movies missing TMDB links
+        try:
+            df = _get_movies_df()
+            if not df.empty and movie_id in df["movieId"].values:
+                title = df[df["movieId"] == movie_id].iloc[0]["title"]
+                clean_title = re.sub(r'\(\d{4}\)', '', title).strip()
+                wiki_url = f"https://en.wikipedia.org/w/api.php?action=query&titles={urllib.parse.quote(clean_title + ' film')}&prop=pageimages&format=json&pithumbsize=500"
+                req = urllib.request.Request(wiki_url, headers={'User-Agent': 'Mozilla/5.0'})
+                res = urllib.request.urlopen(req, timeout=3).read().decode('utf-8')
+                import json
+                pages = json.loads(res).get("query", {}).get("pages", {})
+                for page_id, page_data in pages.items():
+                    if "thumbnail" in page_data:
+                        img_url = page_data["thumbnail"]["source"]
+                        POSTER_CACHE[movie_id] = img_url
+                        return img_url
+        except Exception as e:
+            print(f"Wiki fallback error for {movie_id}: {e}")
         return None
 
     try:

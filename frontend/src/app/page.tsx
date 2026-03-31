@@ -90,13 +90,13 @@ function HeroBanner({ movies }: { movies: MovieSummary[] }) {
                     >
                         <Link 
                             href={`/movie/${movie.movieId}`} 
-                            className="bg-white text-black text-sm md:text-lg font-bold px-6 py-2 md:px-8 md:py-3 rounded-[4px] flex items-center gap-3 transition hover:bg-white/80 active:scale-95"
+                            className="bg-white text-black text-sm md:text-lg font-bold px-6 py-2 md:px-8 md:py-2.5 rounded-[4px] flex items-center gap-2 transition hover:bg-white/80 active:scale-95"
                         >
-                            <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                            <svg className="w-5 h-5 md:w-7 md:h-7 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                             Play
                         </Link>
-                        <button className="bg-zinc-500/50 text-white text-sm md:text-lg font-bold px-6 py-2 md:px-8 md:py-3 rounded-[4px] flex items-center gap-3 transition hover:bg-zinc-500/30 active:scale-95">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <button className="bg-[rgba(109,109,110,0.7)] text-white text-sm md:text-lg font-bold px-6 py-2 md:px-8 md:py-2.5 rounded-[4px] flex items-center gap-2 transition hover:bg-[rgba(109,109,110,0.4)] active:scale-95">
+                            <svg className="w-5 h-5 md:w-7 md:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             More Info
                         </button>
                     </motion.div>
@@ -120,108 +120,7 @@ function HeroBanner({ movies }: { movies: MovieSummary[] }) {
     );
 }
 
-// ── Trends Now / Genre Filters ──────────────────────────────────────────────
-function TrendsNow({ movies }: { movies: MovieSummary[] }) {
-    const [activeGenre, setActiveGenre] = useState("Action");
-    const rowRef = useRef<HTMLDivElement>(null);
-
-    const scroll = (dir: "left" | "right") => {
-        if (!rowRef.current) return;
-        rowRef.current.scrollBy({ left: dir === "right" ? window.innerWidth * 0.75 : -(window.innerWidth * 0.75), behavior: "smooth" });
-    };
-
-    const displayMovies = movies.filter(m => m.genre && m.genre.toLowerCase().includes(activeGenre.toLowerCase()));
-    const finalMovies = displayMovies.length > 0 ? displayMovies : movies;
-
-    return (
-        <motion.section 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.7 }}
-            className="px-8 md:px-12 mb-16 relative z-20"
-        >
-            {/* Header / Tabs */}
-            <div className="flex items-center justify-between pb-4 mb-4">
-                <div className="flex items-center gap-2">
-                    <h2 className="text-[1.4vw] font-bold text-[#e5e5e5] hover:text-white cursor-pointer transition flex items-center gap-2 tracking-medium group">
-                        Trends Now
-                        <span className="text-[#54b9c5] opacity-0 group-hover:opacity-100 transition-opacity text-sm -translate-x-2 group-hover:translate-x-0 ml-1">Explore All ›</span>
-                    </h2>
-                </div>
-            </div>
-
-            {/* Genre Pills */}
-            <div className="flex items-center gap-3 mb-6 overflow-x-auto no-scrollbar pb-2">
-                {GENRES.map(g => (
-                    <button
-                        key={g}
-                        onClick={() => setActiveGenre(g)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 border ${
-                            activeGenre === g 
-                            ? "bg-white text-black border-white scale-105" 
-                            : "bg-transparent text-white/70 border-white/40 hover:border-white hover:text-white hover:scale-105"
-                        }`}
-                    >
-                        {g}
-                    </button>
-                ))}
-            </div>
-
-            {/* Movies Row */}
-            <div className="relative group/row">
-                <button 
-                    onClick={() => scroll("left")}
-                    className="absolute left-0 top-0 bottom-0 -ml-8 z-40 w-12 bg-black/70 opacity-0 group-hover/row:opacity-100 transition-opacity flex items-center justify-center cursor-pointer hover:bg-black/90 hover:scale-110"
-                >
-                    <svg className="w-8 h-8 text-white scale-y-150" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" /></svg>
-                </button>
-                
-                <div className="flex gap-[0.4vw] overflow-x-auto overflow-y-hidden scroll-smooth snap-x no-scrollbar pb-[4vw] pt-[2vw] -mt-[2vw] px-1" ref={rowRef}>
-                    {finalMovies.map((m, i) => (
-                        <div 
-                            key={`${m.movieId}-${i}`} 
-                            // Netflix exact expanding effect on hover
-                            className="flex-shrink-0 w-[14vw] sm:w-[15vw] md:w-[16vw] lg:w-[16.5vw] aspect-[2/3] relative group/card cursor-pointer transition-transform duration-300 origin-bottom hover:scale-[1.3] hover:z-50 delay-75 ease-out shadow-none hover:shadow-2xl hover:shadow-black"
-                        >
-                            <Link href={`/movie/${m.movieId}`} className="absolute inset-0 rounded-[0.2vw] overflow-hidden">
-                                <img src={posterUrl(m.movieId)} alt={m.title} className="w-full h-full object-cover rounded-[0.2vw]" loading="lazy" />
-                                
-                                {/* Info Box that fades in from bottom within the scaled card */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 pointer-events-none">
-                                    <div className="flex gap-2 items-center mb-1">
-                                        <button className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-black hover:bg-neutral-300 pointer-events-auto">
-                                            <svg className="w-3 h-3 fill-current ml-[2px]" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                        </button>
-                                        <button className="w-6 h-6 border-2 border-white/50 rounded-full flex items-center justify-center text-white hover:border-white hover:bg-white/20 pointer-events-auto">
-                                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"></path></svg>
-                                        </button>
-                                        <button className="w-6 h-6 border-2 border-white/50 rounded-full flex items-center justify-center text-white hover:border-white hover:bg-white/20 pointer-events-auto ml-auto">
-                                            <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z" /></svg>
-                                        </button>
-                                    </div>
-                                    <h3 className="text-white font-bold text-[0.8rem] line-clamp-1 leading-snug">{m.title}</h3>
-                                    <p className="text-green-500 font-bold text-[0.6rem] mt-1">98% Match <span className="text-white/70 font-normal outline outline-1 outline-white/40 px-1 ml-1 rounded-[2px] opacity-80">{m.content_rating || 'PG-13'}</span></p>
-                                    <p className="text-white/90 text-[0.6rem] mt-1 font-semibold flex items-center gap-1">
-                                        {m.genre.split(', ')[0]} <span className="w-1 h-1 bg-white/40 rounded-full"></span> 
-                                        {m.duration}m
-                                    </p>
-                                </div>
-                            </Link>
-                        </div>
-                    ))}
-                </div>
-
-                <button 
-                    onClick={() => scroll("right")}
-                    className="absolute right-0 top-0 bottom-0 -mr-8 z-40 w-12 bg-black/70 opacity-0 group-hover/row:opacity-100 transition-opacity flex items-center justify-center cursor-pointer hover:bg-black/90 hover:scale-110"
-                >
-                    <svg className="w-8 h-8 text-white scale-y-150" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" /></svg>
-                </button>
-            </div>
-        </motion.section>
-    );
-}
+// Removed custom TrendsNow section with pills to strictly match Netflix rows
 
 // ── Standard Content Row (Used for other categories) ─────────────────────────
 function StandardRow({ title, movies }: { title: string; movies: MovieSummary[] }) {
@@ -353,9 +252,9 @@ export default function HomePage() {
             )}
 
             <div className="relative z-20 -top-[10vh]">
-                {/* Trends Now matching reference image */}
+                {/* Trending Now instead of custom module */}
                 {!loading && allMoviesList.length > 0 && (
-                    <TrendsNow movies={[...allMoviesList].sort(() => Math.random() - 0.5).slice(0, 50)} />
+                    <StandardRow title="Trending Now" movies={[...allMoviesList].sort(() => Math.random() - 0.5).slice(0, 50)} />
                 )}
 
                 {/* Other Rows */}
