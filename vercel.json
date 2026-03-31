@@ -14,7 +14,7 @@
       "use": "@vercel/python",
       "config": {
         "runtime": "python3.11",
-        "maxLambdaSize": "250mb",
+        "maxLambdaSize": "50mb",
         "includeFiles": [
           "ai_engine/**"
         ]
