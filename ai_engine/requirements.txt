@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pandas
+numpy
+scikit-learn
+joblib
+jinja2
+sqlalchemy
+python-multipart
+PyJWT
+passlib
+bcrypt
+websockets

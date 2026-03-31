@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinema Dude - Sign In</title>
+<link rel="stylesheet" href="/static/style.css?v=4">
+</head>
+<body class="login-body">
+<header class="login-header">
+<div class="login-logo">CINEMA DUDE</div>
+</header>
+<div class="login-container">
+<h1>Sign In</h1>
+<input id="username" placeholder="Email or username">
+<input id="password" type="password" placeholder="Password">
+<input id="age" type="number" placeholder="Your age (optional, for content filtering)" min="1" max="120">
+<button onclick="login()">Sign In</button>
+<p class="login-footer">Use: admin/1234 or user/1234. Age filters adult content when watching with family.</p>
+</div>
+
+<script>
+async function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+    const ageInput = document.getElementById("age");
+    const age = ageInput.value ? parseInt(ageInput.value) : null;
+
+    const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, age })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "success") {
+        let url = "/home?user=" + encodeURIComponent(username) + "&userId=" + data.userId + "&age=" + (data.age || 18);
+        window.location.href = url;
+    } else {
+        alert("Invalid credentials");
+    }
+}
+</script>
+</body>
+</html>

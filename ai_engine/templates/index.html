@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinema Dude - Futuristic OTT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css?v=6">
+</head>
+
+<body>
+
+  <div class="app-container">
+    <!-- Left Sidebar -->
+    <nav class="sidebar">
+      <div class="brand-logo">
+        <div class="icon"><i class="fas fa-play" style="font-size: 14px; color: #fff;"></i></div>
+        CD<span class="neon-text">ude</span>
+      </div>
+
+      <div class="nav-menu">
+        <a href="javascript:window.scrollTo(0,0);" class="nav-item active"
+          onclick="document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active')); this.classList.add('active');"><i
+            class="fas fa-home"></i> Dashboard</a>
+        <a href="#ai-recommendations-wrapper" class="nav-item"
+          onclick="document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active')); this.classList.add('active');"><i
+            class="fas fa-compass"></i> For You</a>
+        <a href="javascript:document.getElementById('searchInput').focus();" class="nav-item"
+          onclick="document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active')); this.classList.add('active');"><i
+            class="fas fa-search"></i> Search</a>
+        <a href="/group" class="nav-item"><i class="fas fa-users"></i> Watch Party</a>
+        <a href="javascript:alert('Watchlist is currently showing as heart buttons on cards. Full view coming soon!');"
+          class="nav-item"><i class="fas fa-heart"></i> Watchlist</a>
+      </div>
+
+      <div class="sidebar-heading">Watch Party</div>
+      <div class="friends-list">
+        <div class="friend-item">
+          <div class="friend-avatar online" style="background: url('https://picsum.photos/40/40?1') center/cover;">
+          </div>
+          <div class="friend-info">
+            <h4>Alex</h4>
+            <p>Watching Inception</p>
+          </div>
+        </div>
+        <div class="friend-item">
+          <div class="friend-avatar online" style="background: url('https://picsum.photos/40/40?2') center/cover;">
+          </div>
+          <div class="friend-info">
+            <h4>Sam_99</h4>
+            <p>Online</p>
+          </div>
+        </div>
+        <button class="btn btn-glass" style="margin-top: 10px; font-size: 0.8rem; padding: 8px;"
+          onclick="createGroupRoom()">
+          <i class="fas fa-users"></i> Create Room
+        </button>
+      </div>
+
+      <div class="sidebar-heading">Smart Downloads</div>
+      <div class="glass-panel" style="padding: 12px; text-align: center; margin-top: 8px;">
+        <i class="fas fa-download" style="color: var(--neon-cyan); font-size: 1.5rem; margin-bottom: 8px;"></i>
+        <p style="font-size: 0.75rem; color: var(--text-muted);">2 Movies ready for your commute based on habits.</p>
+      </div>
+    </nav>
+
+    <!-- Main Dashboard -->
+    <main class="main-dashboard">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="search-container">
+          <i class="fas fa-search" style="color: var(--text-muted);"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search titles, actors, genres...">
+          <button class="voice-search" id="voiceSearchBtn" title="Voice Search">
+            <i class="fas fa-microphone"></i>
+          </button>
+        </div>
+
+        <div class="user-controls">
+          <div class="mode-selector" role="group">
+            <button class="mode-pill" data-mode="children"
+              aria-pressed="{{ 'true' if children_mode else 'false' }}">Kids</button>
+            <button class="mode-pill" data-mode="family"
+              aria-pressed="{{ 'true' if family_mode and not children_mode else 'false' }}">Family</button>
+            <button class="mode-pill" data-mode="everyone"
+              aria-pressed="{{ 'true' if not family_mode and not children_mode else 'false' }}">Full</button>
+          </div>
+
+          <div class="user-profile" onclick="openInsightsModal()">
+            <span class="user-name" style="font-weight: 500;">{{user|default('User')}} <i class="fas fa-chevron-down"
+                style="font-size: 0.7rem; margin-left: 4px;"></i></span>
+            <div class="user-avatar">{{ (user or '?')[:1]|upper }}</div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Search Results (hidden by default) -->
+      <div id="search-results-section" class="content-section" style="display:none;">
+        <h2 class="section-title">Search Results</h2>
+        <div class="row-container" id="search-results-row"></div>
+      </div>
+
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <div class="smart-pick-badge">
+            <i class="fas fa-sparkles"></i> <span>Daily Top Pick</span>
+          </div>
+          <!-- Hero Movie Title simulation -->
+          <h1 class="hero-title">CYBER <span class="neon-text">DRIFTER</span></h1>
+          <div class="hero-metadata">
+            <span class="match">98% Match</span>
+            <span>2026</span>
+            <span>Action • Sci-Fi</span>
+            <span style="border: 1px solid rgba(255,255,255,0.4); padding: 0 6px; border-radius: 4px;">PG-13</span>
+          </div>
+          <p class="hero-desc">Recommended because you watched Action movies late at night. Dive into a neon-drenched
+            dystopia where rogues race for freedom.</p>
+          <div style="display: flex; gap: 16px;">
+            <button class="btn btn-primary"><i class="fas fa-play"></i> Watch Now</button>
+            <button class="btn btn-glass"><i class="fas fa-info-circle"></i> Details</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Mood Dashboard -->
+      <div class="dashboard-controls glass-panel">
+        <div style="flex: 1;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-brain" style="color: var(--neon-purple);"></i> Neural Match Settings
+          </h3>
+          <div class="mood-selector">
+            <span class="mood-title">Vibe Check:</span>
+            <button class="mood-pill" onclick="setMood('happy', this)">✨ Happy</button>
+            <button class="mood-pill" onclick="setMood('bored', this)">💥 Action</button>
+            <button class="mood-pill" onclick="setMood('relax', this)">🍵 Chill</button>
+            <button class="mood-pill" onclick="setMood('romantic', this)">❤️ Romance</button>
+            <span class="mood-title" style="margin-left: 16px;">Time:</span>
+            <select id="maxDuration"
+              style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 100px; outline: none; font-family: inherit;">
+              <option value="">Any Runtime</option>
+              <option value="30">Quick (Under 30m)</option>
+              <option value="90">Movie Night (~90m)</option>
+              <option value="150">Epic (>2h)</option>
+            </select>
+            <!-- hidden inputs for existing JS logic -->
+            <input type="hidden" id="userId" value="{{ userId or 1 }}">
+            <input type="hidden" id="userMood" value="">
+
+            <button class="btn btn-neon" style="padding: 10px 24px; margin-left: auto;" onclick="getRecommendations()">
+              Generate Feed <i class="fas fa-bolt"></i>
+            </button>
+          </div>
+          <div class="ai-reasoning-text" style="margin-top: 16px;" id="ai-context-text">
+            <i class="fas fa-clock"></i> Analyzing your late-night watch history...
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Recommendations Feed -->
+      <div class="content-section" id="ai-recommendations-wrapper">
+        <div class="section-header">
+          <h2 class="section-title">For You, Right Now</h2>
+        </div>
+        <div class="row-container" id="recommendations">
+          <!-- Recommendations will be injected here by getRecommendations() -->
+          <p style="color: var(--text-muted); padding: 20px;">Click 'Generate Feed' to run the neural engine.</p>
+        </div>
+      </div>
+
+      {% if continue_watching %}
+      <!-- Continue Watching -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Jump Back In</h2>
+        </div>
+        <div class="row-container">
+          {% for m in continue_watching %}
+          <div class="futuristic-card">
+            <img class="card-poster" src="{{m.poster}}" alt="{{m.title}}"
+              onerror="this.onerror=null; this.src='https://picsum.photos/seed/{{m.movieId}}/300/400';">
+            <div class="card-hover-content">
+              <h3 class="card-title">{{m.title}}</h3>
+              <div class="card-metadata">
+                <span>Remaining: 45m</span>
+              </div>
+              <div class="card-actions">
+                <button class="card-btn" onclick="updateWatchProgress({{m.movieId}}, 100)"><i class="fas fa-play"></i>
+                  Resume</button>
+              </div>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar" style="width: {{m.progress}}%;"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Trending -->
+      <div class="content-section">
+        <div class="section-header">
+          <h2 class="section-title">Global Trending</h2>
+        </div>
+        <div class="row-container">
+          {% for m in movies %}
+          <div class="futuristic-card">
+            <img class="card-poster" src="{{m.poster}}" alt="{{m.title}}"
+              onerror="this.onerror=null; this.src='https://picsum.photos/seed/{{m.movieId}}/300/400';">
+            <div class="card-badge-top">Live Trending</div>
+            <button class="card-watchlist-btn" onclick="toggleWatchlist({{m.movieId}}, this)">
+              {% if m.movieId in watchlist_ids %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-plus"></i>{%
+              endif %}
+            </button>
+
+            <div class="card-hover-content">
+              <h3 class="card-title">{{m.title}}</h3>
+              <div class="card-metadata">
+                <span>{{m.content_rating}}</span>
+                <span>{{m.genre}}</span>
+              </div>
+              <div class="card-actions">
+                <button class="card-btn" onclick="updateWatchProgress({{m.movieId}}, 20)"><i class="fas fa-play"></i>
+                  Trailer</button>
+                <button class="card-btn sec"><i class="fas fa-info"></i></button>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </main>
+
+    <!-- UI Overlay for AI Chat -->
+    <button id="toggleAiBtn" onclick="toggleAiSidebar()">
+      <i class="fas fa-robot"></i>
+    </button>
+
+    <aside class="ai-sidebar" id="aiSidebar">
+      <div class="ai-header">
+        <div class="ai-title">
+          <div class="ai-icon"></div> Neural Assistant
+        </div>
+        <button class="close-ai-btn" onclick="toggleAiSidebar()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="ai-chat-area" id="aiChatArea">
+        <div class="chat-msg bot">
+          Hey {{user}}! I noticed you enjoy sci-fi movies on weekends. Looking for something mind-bending tonight?
+        </div>
+      </div>
+      <div class="ai-input-area">
+        <div class="ai-input-box">
+          <input type="text" id="aiChatInput" placeholder="Ask for a recommendation..."
+            onkeypress="handleAiChat(event)">
+          <button class="ai-send-btn" onclick="sendAiMessage()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Explainable AI Modal -->
+  <div id="insightsModal" class="modal-overlay">
+    <div class="modal-content glass-panel neon-border">
+      <h2 style="margin-bottom: 8px; font-weight: 700;">Taste Profile <i class="fas fa-sliders-h"
+          style="color: var(--neon-cyan);"></i></h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px;">Adjust what the Neural Engine feeds
+        you. Uncheck to drop genres.</p>
+      <div id="insightsContent" style="max-height: 400px; overflow-y: auto; padding-right: 16px;">Loading...</div>
+      <button class="btn btn-primary" onclick="closeInsightsModal()" style="margin-top: 24px; width: 100%;">Save
+        Preferences</button>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
+  <script>
+    const USER_AGE = {{ age|default (18) }};
+    const USER_ID = {{ userId|default (1) }};
+    const CURRENT_MODE = "{{ 'children' if children_mode else ('family' if family_mode else 'everyone') }}";
+
+    // Sub-mode pill logic
+    document.querySelectorAll('.mode-pill').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const mode = this.getAttribute('data-mode');
+        const params = new URLSearchParams(window.location.search);
+        params.set('children', mode === 'children' ? 'true' : 'false');
+        params.set('family', mode === 'family' ? 'true' : 'false');
+        window.location.search = params.toString();
+      });
+    });
+
+    // Mood pill logic
+    function setMood(moodValue, btnElement) {
+      document.getElementById('userMood').value = moodValue;
+
+      // UI updates
+      document.querySelectorAll('.mood-pill').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      // Auto fetch
+      getRecommendations();
+    }
+
+    // AI Chat UI logic
+    function toggleAiSidebar() {
+      document.getElementById('aiSidebar').classList.toggle('open');
+    }
+
+    function handleAiChat(e) {
+      if (e.key === 'Enter') sendAiMessage();
+    }
+
+    async function sendAiMessage() {
+      const input = document.getElementById('aiChatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatArea = document.getElementById('aiChatArea');
+      // User message
+      chatArea.innerHTML += `<div class="chat-msg user">${text}</div>`;
+      input.value = '';
+
+      // Scroll down
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      // Typing indicator
+      const typingId = 'typing-' + Date.now();
+      chatArea.innerHTML += `<div id="${typingId}" class="chat-msg bot" style="color:var(--text-muted);"><i class="fas fa-ellipsis-h fa-fade"></i></div>`;
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      try {
+        const res = await fetch('/api/ai_chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: USER_ID, message: text })
+        });
+        const data = await res.json();
+        document.getElementById(typingId).remove();
+        chatArea.innerHTML += `<div class="chat-msg bot">${data.reply}</div>`;
+        chatArea.scrollTop = chatArea.scrollHeight;
+      } catch (e) {
+        document.getElementById(typingId).remove();
+        chatArea.innerHTML += `<div class="chat-msg bot" style="color:#e50914;">Connection lost to Neural Core.</div>`;
+      }
+    }
+
+    // Voice Search animation logic
+    document.getElementById('voiceSearchBtn').addEventListener('click', function () {
+      const btn = this;
+      btn.classList.toggle('listening');
+      if (btn.classList.contains('listening')) {
+        document.getElementById('searchInput').placeholder = "Listening...";
+        setTimeout(() => {
+          btn.classList.remove('listening');
+          document.getElementById('searchInput').value = "Action movies";
+          document.getElementById('searchInput').placeholder = "Search titles, actors, genres...";
+          searchMovies();
+        }, 3000);
+      } else {
+        document.getElementById('searchInput').placeholder = "Search titles, actors, genres...";
+      }
+    });
+
+    // Insights Modal
+    async function openInsightsModal() {
+      document.getElementById('insightsModal').style.display = 'flex';
+      try {
+        const res = await fetch(`/api/user/${USER_ID}/preferences`);
+        const data = await res.json();
+
+        let html = '';
+        for (const [genre, pct] of Object.entries(data.distribution)) {
+          const isDropped = data.dropped.includes(genre);
+          html += `
+                <div style="display:flex;align-items:center;margin-bottom:20px; background:rgba(255,255,255,0.02); padding:12px; border-radius:12px; border:1px solid var(--glass-border);">
+                    <input type="checkbox" id="genre_${genre}" ${!isDropped ? 'checked' : ''} 
+                        onchange="toggleGenrePref('${genre}', this.checked)" style="margin-right:16px; width:20px; height:20px; accent-color: var(--neon-cyan);">
+                    <div style="flex-grow:1;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                            <span style="font-weight:600;">${genre}</span>
+                            <span style="color:var(--text-muted); font-size:0.85rem;">${pct}% DNA</span>
+                        </div>
+                        <div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:10px;overflow:hidden;">
+                            <div style="width:${pct}%;height:100%;background:${isDropped ? '#555' : 'var(--gradient-primary)'};transition:all 0.3s; box-shadow:${isDropped ? 'none' : '0 0 10px var(--neon-purple)'};"></div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+        if (Object.keys(data.distribution).length === 0) {
+          html = '<p>Watch some movies to build your neural profile!</p>';
+        }
+        document.getElementById('insightsContent').innerHTML = html;
+      } catch (e) {
+        document.getElementById('insightsContent').innerHTML = '<p>Failed to load profile.</p>';
+      }
+    }
+
+    function closeInsightsModal() {
+      document.getElementById('insightsModal').style.display = 'none';
+      getRecommendations(); // Refresh
+    }
+
+    async function toggleGenrePref(genre, isLiked) {
+      await fetch('/api/user/preferences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, genre: genre, is_liked: isLiked })
+      });
+    }
+
+    // Auto-update the context text time based
+    (function updateTimeContext() {
+      const hour = new Date().getHours();
+      let text = "";
+      if (hour < 12) text = "Good morning! Here are some fresh picks to start your day.";
+      else if (hour < 17) text = "Afternoon break? Try these shorter titles.";
+      else if (hour < 21) text = "Prime time! Perfect movies for rolling into the evening.";
+      else text = "Late night vibes detected. Queueing up atmospheric thrillers and chill content.";
+      document.getElementById('ai-context-text').innerHTML = `<i class="fas fa-brain"></i> Neural Context: ${text}`;
+    })();
+
+    // Helper functions that script.js or other views might need
+    async function createGroupRoom() {
+      const res = await fetch('/api/group/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        window.location.href = `/group?userId=${USER_ID}&room=${data.room_code}`;
+      }
+    }
+
+    async function toggleWatchlist(movieId, btn) {
+      const isAdding = btn.innerHTML.includes('fa-plus');
+      const endpoint = isAdding ? '/api/watchlist/add' : '/api/watchlist/remove';
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, movie_id: movieId })
+      });
+
+      if (res.ok) {
+        btn.innerHTML = isAdding ? '<i class="fas fa-check"></i>' : '<i class="fas fa-plus"></i>';
+      }
+    }
+
+    async function updateWatchProgress(movieId, progressPercent) {
+      const res = await fetch('/api/watch_progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: USER_ID, movie_id: movieId, progress_percent: progressPercent })
+      });
+
+      const data = await res.json();
+      if (data.take_a_break) {
+        alert("BINGE ALERT: You've watched over " + Math.round(data.binge_minutes / 60) + " hours today! Maybe it's time to take a break outside?");
+      }
+
+      window.location.reload();
+    }
+
+    // Search Logic implementation that was moved to index to have full access
+    document.getElementById('searchInput').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') searchMovies();
+    });
+
+    async function searchMovies() {
+      const q = document.getElementById('searchInput').value;
+      if (!q) {
+        document.getElementById('search-results-section').style.display = 'none';
+        return;
+      }
+      const res = await fetch(`/api/search?query=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const row = document.getElementById('search-results-row');
+      row.innerHTML = '';
+
+      if (data.length === 0) {
+        row.innerHTML = '<p style="padding:20px;">No results found.</p>';
+      } else {
+        data.forEach(m => {
+          row.innerHTML += `
+            <div class="futuristic-card">
+                <img class="card-poster" src="${m.poster}" alt="${m.title}" onerror="this.onerror=null; this.src='https://picsum.photos/seed/${m.movieId}/300/400';">
+                <div class="card-hover-content">
+                    <h3 class="card-title">${m.title}</h3>
+                    <div class="card-metadata">
+                        <span>${m.content_rating}</span>
+                        <span>${m.genre}</span>
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+      }
+      document.getElementById('search-results-section').style.display = 'block';
+    }
+  </script>
+</body>
+
+</html>

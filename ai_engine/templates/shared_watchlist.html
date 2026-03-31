@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{username}}'s Watchlist - Cinema Dude</title>
+    <link rel="stylesheet" href="/static/style.css?v=5">
+</head>
+
+<body>
+    <header class="navbar" id="navbar">
+        <div class="logo">CINEMA DUDE</div>
+        <div class="user-area">
+            <span class="user-name">Guest</span>
+        </div>
+    </header>
+    <div class="content" style="margin-top:100px;">
+        <h2 class="section-title">{{username}}'s Watchlist</h2>
+        {% if movies %}
+        <div class="row">
+            {% for m in movies %}
+            <div class="card">
+                <img src="{{m.poster}}" alt="{{m.title}}"
+                    onerror="this.onerror=null; this.src='https://picsum.photos/seed/{{m.movieId}}/300/450';">
+                <p class="card-title">{{m.title}}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:#808080;">This watchlist is empty.</p>
+        {% endif %}
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
+    },
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "ai_engine/app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/backend/:path*",
+      "destination": "/backend/server.js"
+    },
+    {
+      "source": "/api/ai/:path*",
+      "destination": "/ai_engine/app.py"
+    },
+    {
+      "source": "/recommend/:path*",
+      "destination": "/ai_engine/app.py"
+    },
+    {
+      "source": "/api/poster/:path*",
+      "destination": "/ai_engine/app.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
+    }
+  ]
+}

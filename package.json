@@ -1,0 +1,14 @@
+{
+  "name": "cinematch-root",
+  "version": "1.0.0",
+  "description": "Root configuration to run Next.js, FastAPI, and Express concurrently",
+  "scripts": {
+    "dev": "npx concurrently -c \"blue,green,magenta\" -n \"backend,frontend,ai_engine\" \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:ai\"",
+    "dev:backend": "cd backend && node server.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:ai": "cd ai_engine && python3 -m uvicorn app:app --reload --port 8000"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

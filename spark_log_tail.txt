@@ -1,0 +1,100 @@
+26/03/29 19:48:54 WARN NativeCodeLoader:
+Unable to load native-hadoop library for
+your platform... using builtin-java
+classes where applicable
+26/03/29 19:48:54 INFO ResourceUtils: =====
+===========================================
+==============
+26/03/29 19:48:54 INFO ResourceUtils: No
+custom resources configured for
+spark.driver.
+26/03/29 19:48:54 INFO ResourceUtils: =====
+===========================================
+==============
+26/03/29 19:48:54 INFO SparkContext:
+Submitted application: CineMatch ALS
+Recommender
+26/03/29 19:48:54 INFO ResourceProfile:
+Default ResourceProfile created, executor
+resources: Map(cores -> name: cores,
+amount: 1, script: , vendor: , memory ->
+name: memory, amount: 1024, script: ,
+vendor: , offHeap -> name: offHeap,
+amount: 0, script: , vendor: ), task
+resources: Map(cpus -> name: cpus, amount:
+1.0)
+26/03/29 19:48:54 INFO ResourceProfile:
+Limiting resource is cpu
+26/03/29 19:48:54 INFO
+ResourceProfileManager: Added
+ResourceProfile id: 0
+26/03/29 19:48:54 INFO SecurityManager:
+Changing view acls to: abhin
+26/03/29 19:48:54 INFO SecurityManager:
+Changing modify acls to: abhin
+26/03/29 19:48:54 INFO SecurityManager:
+Changing view acls groups to:
+26/03/29 19:48:54 INFO SecurityManager:
+Changing modify acls groups to:
+26/03/29 19:48:54 INFO SecurityManager:
+SecurityManager: authentication disabled;
+ui acls disabled; users with view
+permissions: abhin; groups with view
+permissions: EMPTY; users with modify
+permissions: abhin; groups with modify
+permissions: EMPTY
+26/03/29 19:48:54 INFO Utils: Successfully
+started service 'sparkDriver' on port
+50072.
+26/03/29 19:48:54 INFO SparkEnv:
+Registering MapOutputTracker
+26/03/29 19:48:54 INFO SparkEnv:
+Registering BlockManagerMaster
+26/03/29 19:48:54 INFO
+BlockManagerMasterEndpoint: Using org.apach
+e.spark.storage.DefaultTopologyMapper for
+getting topology information
+26/03/29 19:48:54 INFO
+BlockManagerMasterEndpoint:
+BlockManagerMasterEndpoint up
+Exception in thread "sbt-bg-threads-1"
+java.lang.IllegalAccessError: Error
+running public static void com.cinematch.Mo
+vieRecommender.main(java.lang.String[]).
+java.lang.IllegalAccessError: class
+org.apache.spark.storage.StorageUtils$ (in
+unnamed module @0x22090ea3) cannot access
+class sun.nio.ch.DirectBuffer (in module
+java.base) because module java.base does
+not export sun.nio.ch to unnamed module
+@0x22090ea3
+If using a layered classloader, this can
+occur if jvm package private classes are
+accessed across layers. This can be fixed
+by changing to the Flat or ScalaInstance
+class loader layering strategies.
+at sbt.Run.invokeMain(Run.scala:153)
+at sbt.Run.execute$1(Run.scala:94)
+at sbt.Run.$anonfun$runWithLoader$5(Run.sc
+ala:121)
+at sbt.Run$.executeSuccess(Run.scala:187)
+at sbt.Run.runWithLoader(Run.scala:121)
+at sbt.Defaults$.$anonfun$bgRunMainTask$7(
+Defaults.scala:1956)
+at sbt.Defaults$.$anonfun$termWrapper$2(De
+faults.scala:1927)
+at scala.runtime.java8.JFunction0$mcV$sp.a
+pply(JFunction0$mcV$sp.java:23)
+at scala.util.Try$.apply(Try.scala:213)
+at sbt.internal.BackgroundThreadPool$Backg
+roundRunnable.run(DefaultBackgroundJobServi
+ce.scala:367)
+at java.base/java.util.concurrent.ThreadPo
+olExecutor.runWorker(ThreadPoolExecutor.jav
+a:1136)
+at java.base/java.util.concurrent.ThreadPo
+olExecutor$Worker.run(ThreadPoolExecutor.ja
+va:635)
+at java.base/java.lang.Thread.run(Thread.j
+ava:840)
+[success] Total time: 11 s, completed 29-Mar-2026, 7:48:54 pm

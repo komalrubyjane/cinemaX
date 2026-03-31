@@ -1,0 +1,58 @@
+# Node
+node_modules/
+.npm
+npm-debug.log
+.yarn/
+yarn-error.log
+
+# Next.js
+.next/
+/frontend/out/
+/frontend/build/
+/clerk-nextjs/out/
+/clerk-nextjs/build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spark / Java / Scala / Build targets
+target/
+project/target/
+project/project/target/
+jdk/
+logs/
+.bsp/
+.idea/
+.metals/
+.vscode/
+.pnp.*
+
+# DS Store
+.DS_Store
+
+# Env vars
+.env
+.env.*
+!.env.example

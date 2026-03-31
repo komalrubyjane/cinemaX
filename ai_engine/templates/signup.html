@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinema Dude - Sign Up</title>
+    <link rel="stylesheet" href="/static/style.css?v=4">
+</head>
+
+<body class="login-body">
+    <header class="login-header">
+        <div class="login-logo">CINEMA DUDE</div>
+    </header>
+    <div class="login-container">
+        <h1>Sign Up</h1>
+        <input id="username" placeholder="Email or username">
+        <input id="password" type="password" placeholder="Password">
+        <input id="age" type="number" placeholder="Your age" min="1" max="120">
+        <button onclick="signup()">Sign Up</button>
+        <p class="login-footer">Already have an account? <a href="/login">Sign in</a></p>
+    </div>
+
+    <script>
+        async function signup() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const ageInput = document.getElementById("age");
+            const age = ageInput.value ? parseInt(ageInput.value) : null;
+
+            if (!username || !password || !age) {
+                alert("Please fill all fields.");
+                return;
+            }
+
+            const res = await fetch("/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password, age })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === "success") {
+                    let url = "/home?user=" + encodeURIComponent(username) + "&userId=" + data.userId + "&age=" + (data.age || 18);
+                    window.location.href = url;
+                } else {
+                    alert("Signup failed");
+                }
+            } else {
+                const err = await res.json();
+                alert(err.detail || "Signup failed");
+            }
+        }
+    </script>
+</body>
+
+</html>
