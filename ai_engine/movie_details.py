@@ -326,57 +326,62 @@ def get_movie_details(movie_id: int, background_tasks: BackgroundTasks, db = Dep
 
     genres_list = str(m.get("genres", m.get("genre", "Drama"))).split("|")
 
-    # 4. We don't have full cast data. Scrape synchronously (fixes Vercel freeze)
+    # 4. Return INSTANT data from CSV — no waiting for scraping!
     description = f"{clean_title} is a captivating {genres_list[0].lower()} film that has won the hearts of audiences worldwide."
     duration = int(m.get("duration", 120)) if pd.notna(m.get("duration")) else 120
     poster_url = f"/api/ai/poster/{movie_id}"
     languages = ["English"]
     
-    try:
-        # Run synchronously to ensure it completes
-        background_scrape_and_update(
-            movie_id, title, clean_title, genres_list, year, duration, languages, description, poster_url
-        )
-        # Fetch the newly populated data
-        new_db_movie = db_cli.table("movies").select("*").eq("movie_id", movie_id).execute().data[0]
-        cast_str = new_db_movie.get('cast', '')
+    # Kick off background scrape (fire-and-forget, won't block response)
+    background_tasks.add_task(
+        background_scrape_and_update,
+        movie_id, title, clean_title, genres_list, year, duration, languages, description, poster_url
+    )
+
+    return {
+        "movie_id": movie_id,
+        "title": clean_title,
+        "genres": genres_list,
+        "rating": round(random.uniform(7.0, 9.5), 1),
+        "release_year": year,
+        "duration": duration,
+        "languages": languages,
+        "description": description,
+        "trailer_url": f"https://www.youtube.com/results?search_query={clean_title.replace(' ', '+')}+trailer",
+        "poster": poster_url,
+        "cast": [],
+        "director": "Unknown",
+        "hero": "Unknown",
+        "heroine": "Unknown",
+        "producers": ["Unknown"],
+    }
+
+
+@movie_router.get("/{movie_id}/cast")
+def get_movie_cast(movie_id: int, db = Depends(get_db)):
+    """Fast async endpoint: returns cast if already scraped, else scrapes now."""
+    db_movie_list = db.table("movies").select("cast,director,hero,heroine,producers").eq("movie_id", movie_id).execute().data
+    if db_movie_list and db_movie_list[0].get("cast"):
+        d = db_movie_list[0]
+        cast_str = d.get("cast", "")
         return {
-            "movie_id": movie_id,
-            "title": clean_title,
-            "genres": new_db_movie.get('genres', '').split(",") if new_db_movie.get('genres') else genres_list,
-            "rating": new_db_movie.get('rating') or round(random.uniform(7.0, 9.5), 1),
-            "release_year": year,
-            "duration": new_db_movie.get('duration') or duration,
-            "languages": new_db_movie.get('languages', '').split(",") if new_db_movie.get('languages') else languages,
-            "description": new_db_movie.get('description') or description,
-            "trailer_url": f"https://www.youtube.com/results?search_query={clean_title.replace(' ', '+')}+trailer",
-            "poster": poster_url,
-            "cast": [{"name": c.strip(), "image": f"https://ui-avatars.com/api/?name={urllib.parse.quote(c.strip())}&background=random&color=fff&size=200"} for c in cast_str.split(",")] if cast_str else [],
-            "director": new_db_movie.get('director') or "Unknown",
-            "hero": new_db_movie.get('hero') or "Unknown",
-            "heroine": new_db_movie.get('heroine') or "Unknown",
-            "producers": new_db_movie.get('producers', "").split(",") if new_db_movie.get('producers') else ["Unknown"],
+            "cast": [{"name": c.strip(), "image": f"https://ui-avatars.com/api/?name={urllib.parse.quote(c.strip())}&background=random&color=fff&size=200"} for c in cast_str.split(",") if c.strip()],
+            "director": d.get("director") or "Unknown",
+            "hero": d.get("hero") or "Unknown",
+            "heroine": d.get("heroine") or "Unknown",
+            "producers": d.get("producers", "").split(",") if d.get("producers") else ["Unknown"],
         }
-    except Exception as e:
-        print(f"Fallback scraper error: {e}")
-        # Extreme fallback if even the scrape fails
-        return {
-            "movie_id": movie_id,
-            "title": clean_title,
-            "genres": genres_list,
-            "rating": round(random.uniform(7.0, 9.5), 1),
-            "release_year": year,
-            "duration": duration,
-            "languages": languages,
-            "description": description,
-            "trailer_url": f"https://www.youtube.com/results?search_query={clean_title.replace(' ', '+')}+trailer",
-            "poster": poster_url,
-            "cast": [{"name": "Check TMDB", "image": "https://ui-avatars.com/api/?name=Cast"}],
-            "director": "Various",
-            "hero": "Unknown",
-            "heroine": "Unknown",
-            "producers": ["Unknown"],
-        }
+    # Not yet scraped — do a quick TMDB-only fetch (fastest source)
+    tmdb_data = fetch_cast_from_tmdb(movie_id)
+    cast_names = tmdb_data["cast_names"]
+    director = tmdb_data["director"] or "Unknown"
+    return {
+        "cast": [{"name": c.strip(), "image": f"https://ui-avatars.com/api/?name={urllib.parse.quote(c.strip())}&background=random&color=fff&size=200"} for c in cast_names],
+        "director": director,
+        "hero": cast_names[0] if cast_names else "Unknown",
+        "heroine": cast_names[1] if len(cast_names) > 1 else "Unknown",
+        "producers": ["Unknown"],
+    }
 
 
 @movie_router.get("/{movie_id}/similar")

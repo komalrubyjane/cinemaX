@@ -300,12 +300,16 @@ def get_tmdb_poster(movie_id: int, request: Request):
     
     if real_url:
         from fastapi.responses import RedirectResponse
-        return RedirectResponse(url=real_url, status_code=302)
+        resp = RedirectResponse(url=real_url, status_code=302)
+        resp.headers["Cache-Control"] = "public, max-age=86400"
+        return resp
         
     if REAL_POSTERS:
         fallback_url = REAL_POSTERS[movie_id % len(REAL_POSTERS)]
         from fastapi.responses import RedirectResponse
-        return RedirectResponse(url=fallback_url, status_code=302)
+        resp = RedirectResponse(url=fallback_url, status_code=302)
+        resp.headers["Cache-Control"] = "public, max-age=86400"
+        return resp
             
     # Absolute fallback to a local image
     from fastapi.responses import FileResponse

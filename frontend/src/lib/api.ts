@@ -69,6 +69,14 @@ export async function fetchSimilarMovies(id: number): Promise<MovieSummary[]> {
     return res.json();
 }
 
+export async function fetchMovieCast(id: number): Promise<any> {
+    const res = await fetch(`${PYTHON_BASE}/movies/${id}/cast`, { 
+        headers: { "Bypass-Tunnel-Reminder": "true" },
+        cache: "no-store" 
+    });
+    return res.json();
+}
+
 
 export async function fetchRecommendations(userId: string | number): Promise<MovieSummary[]> {
     const res = await fetch(`/recommend/${userId}`, { 

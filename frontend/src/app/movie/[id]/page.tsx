@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import MovieCard from "@/components/MovieCard";
-import { fetchMovieDetail, fetchSimilarMovies, posterUrl, createWatchParty, addToWatchlist, type MovieDetail, type MovieSummary } from "@/lib/api";
+import { fetchMovieDetail, fetchSimilarMovies, fetchMovieCast, posterUrl, createWatchParty, addToWatchlist, type MovieDetail, type MovieSummary } from "@/lib/api";
 
 export default function MovieDetailPage() {
     const params = useParams();
@@ -16,6 +16,7 @@ export default function MovieDetailPage() {
     const [similar, setSimilar] = useState<MovieSummary[]>([]);
     const [inWatchlist, setInWatchlist] = useState(false);
     const [partyLink, setPartyLink] = useState<string | null>(null);
+    const [castData, setCastData] = useState<any>(null);
 
     useEffect(() => {
         async function load() {
@@ -25,6 +26,8 @@ export default function MovieDetailPage() {
             ]);
             setMovie(detail);
             setSimilar(similarMovies || []);
+            // Load cast separately (async, non-blocking)
+            fetchMovieCast(movieId).then(data => setCastData(data)).catch(() => {});
         }
         load();
     }, [movieId]);
@@ -129,19 +132,19 @@ export default function MovieDetailPage() {
                         <div className="grid grid-cols-2 gap-4 mb-8 text-sm bg-black/30 p-4 rounded-xl border border-white/5">
                             <div className="flex flex-col">
                                 <span className="text-[var(--text-secondary)] mb-1 text-xs uppercase tracking-wider">Director</span>
-                                <span className="font-semibold text-white">{movie.director || "Unknown"}</span>
+                                <span className="font-semibold text-white">{castData?.director || movie.director || "Loading..."}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[var(--text-secondary)] mb-1 text-xs uppercase tracking-wider">Producers</span>
-                                <span className="font-semibold text-white line-clamp-1">{movie.producers?.join(", ") || "Unknown"}</span>
+                                <span className="font-semibold text-white line-clamp-1">{castData?.producers?.join(", ") || movie.producers?.join(", ") || "Loading..."}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[var(--text-secondary)] mb-1 text-xs uppercase tracking-wider">Hero</span>
-                                <span className="font-semibold text-[var(--accent)]">{movie.hero || "Unknown"}</span>
+                                <span className="font-semibold text-[var(--accent)]">{castData?.hero || movie.hero || "Loading..."}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[var(--text-secondary)] mb-1 text-xs uppercase tracking-wider">Heroine</span>
-                                <span className="font-semibold text-[var(--accent)]">{movie.heroine || "Unknown"}</span>
+                                <span className="font-semibold text-[var(--accent)]">{castData?.heroine || movie.heroine || "Loading..."}</span>
                             </div>
                         </div>
 
@@ -184,33 +187,44 @@ export default function MovieDetailPage() {
                         {/* Cast */}
                         <h3 className="text-xl font-bold mb-4">Cast</h3>
                         <div className="flex gap-4 overflow-x-auto pb-4">
-                            {movie.cast?.map((actor, i) => (
-                                <motion.div
-                                    key={i}
-                                    className="flex-shrink-0 text-center cursor-pointer group"
-                                    whileHover={{ scale: 1.05 }}
-                                >
-                                    <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 group-hover:border-[var(--accent)] transition mb-2">
-                                        <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-xs text-zinc-500">
-                                            {actor.image ? (
-                                                <Image
-                                                    src={actor.image}
-                                                    alt={actor.name}
-                                                    width={80}
-                                                    height={80}
-                                                    className="w-full h-full object-cover"
-                                                    unoptimized
-                                                />
-                                            ) : (
-                                                "No Image"
-                                            )}
+                            {(castData?.cast || movie.cast || []).length > 0 ? (
+                                (castData?.cast || movie.cast).map((actor: any, i: number) => (
+                                    <motion.div
+                                        key={i}
+                                        className="flex-shrink-0 text-center cursor-pointer group"
+                                        whileHover={{ scale: 1.05 }}
+                                    >
+                                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/20 group-hover:border-[var(--accent)] transition mb-2">
+                                            <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-xs text-zinc-500">
+                                                {actor.image ? (
+                                                    <Image
+                                                        src={actor.image}
+                                                        alt={actor.name}
+                                                        width={80}
+                                                        height={80}
+                                                        className="w-full h-full object-cover"
+                                                        unoptimized
+                                                    />
+                                                ) : (
+                                                    "No Image"
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <span className="text-xs text-[var(--text-secondary)] group-hover:text-white transition line-clamp-2">
-                                        {actor.name}
-                                    </span>
-                                </motion.div>
-                            ))}
+                                        <span className="text-xs text-[var(--text-secondary)] group-hover:text-white transition line-clamp-2">
+                                            {actor.name}
+                                        </span>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div className="flex gap-4">
+                                    {[1,2,3,4].map(i => (
+                                        <div key={i} className="flex-shrink-0 text-center">
+                                            <div className="w-20 h-20 rounded-full bg-zinc-800 animate-pulse mb-2" />
+                                            <div className="w-16 h-3 bg-zinc-800 animate-pulse rounded mx-auto" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 </div>
