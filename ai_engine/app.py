@@ -24,6 +24,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def rewrite_vercel_paths(request: Request, call_next):
+    if request.scope["path"].startswith("/api/ai/"):
+        request.scope["path"] = request.scope["path"].replace("/api/ai/", "/api/", 1)
+    return await call_next(request)
+
+
 from auth import auth_router
 app.include_router(auth_router)
 

@@ -44,6 +44,10 @@
     }
   ],
   "env": {
-    "VERCEL": "1"
+    "VERCEL": "1",
+    "SUPABASE_URL": "https://msnjqsujvklzelidszgn.supabase.co",
+    "SUPABASE_KEY": "sb_publishable_yJonjimN2K-kZX1MmWB7gg_lQd0JmJe",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://msnjqsujvklzelidszgn.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_yJonjimN2K-kZX1MmWB7gg_lQd0JmJe"
   }
 }

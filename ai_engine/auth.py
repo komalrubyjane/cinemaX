@@ -21,8 +21,8 @@ class LoginData(BaseModel):
 class SignupData(BaseModel):
     username: str
     password: str
-    email: str | None = None
     age: int = 18
+    preferred_genres: str = ""
     preferred_genres: str = ""
 
 def verify_password(plain_password, hashed_password):
@@ -49,26 +49,20 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 @auth_router.post("/signup")
 def signup(data: SignupData, db = Depends(get_db)):
-    # Check if username or email exists
-    res = db.table("users").select("*").or_(f"username.eq.{data.username},email.eq.{data.email}").execute()
+    # Check if username exists
+    res = db.table("users").select("*").eq("username", data.username).execute()
     existing_users = res.data
 
     if existing_users:
-        user_dict = existing_users[0]
-        if user_dict.get("username") == data.username:
-            raise HTTPException(status_code=400, detail="Username already exists")
-        else:
-            raise HTTPException(status_code=400, detail="Email already exists")
+        raise HTTPException(status_code=400, detail="Username already exists")
         
     hashed_password = get_password_hash(data.password)
     
     # Insert new user
     new_user_data = {
         "username": data.username,
-        "email": data.email,
         "password": hashed_password,
         "age": data.age,
-        "preferred_genres": data.preferred_genres
     }
     
     insert_res = db.table("users").insert(new_user_data).execute()
