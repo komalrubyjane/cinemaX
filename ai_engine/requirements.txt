@@ -5,11 +5,12 @@ numpy
 scikit-learn
 joblib
 jinja2
-sqlalchemy
 python-multipart
 PyJWT
 passlib[bcrypt]
 bcrypt
 websockets
 aiofiles
-requestssupabase
+requests
+supabase>=2.10.0
+httpx

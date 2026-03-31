@@ -16,13 +16,36 @@ SUPABASE_KEY = os.environ.get(
     "sb_publishable_yJonjimN2K-kZX1MmWB7gg_lQd0JmJe",
 )
 
-_client: Client | None = None
+class _NullResult:
+    data = []
+    def execute(self): return self
 
+class _NullTable:
+    def select(self, *a, **kw): return self
+    def insert(self, *a, **kw): return self
+    def update(self, *a, **kw): return self
+    def delete(self, *a, **kw): return self
+    def eq(self, *a, **kw): return self
+    def execute(self): return _NullResult()
+
+class _StubClient:
+    """Returned when Supabase credentials are invalid — app still serves CSV data."""
+    def table(self, name): return _NullTable()
+
+_client: Client | None = None
+_stub_mode = False
 
 def get_supabase() -> Client:
-    global _client
+    global _client, _stub_mode
+    if _stub_mode:
+        return _StubClient()  # type: ignore
     if _client is None:
-        _client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        try:
+            _client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        except Exception as e:
+            print(f"[DB] Supabase init failed ({e}) — running in stub mode (CSV only)")
+            _stub_mode = True
+            return _StubClient()  # type: ignore
     return _client
 
 

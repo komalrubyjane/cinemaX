@@ -7,9 +7,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import pandas as pd
 from pydantic import BaseModel
 from fastapi import FastAPI, Request, Depends, HTTPException, status, BackgroundTasks
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
 from database import get_db, User, WatchHistory, Watchlist, Activity
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -30,6 +29,9 @@ async def rewrite_vercel_paths(request: Request, call_next):
         request.scope["path"] = request.scope["path"].replace("/api/ai/", "/api/", 1)
     return await call_next(request)
 
+@app.get("/api/health")
+def health_check():
+    return JSONResponse({"status": "ok", "message": "CinemaX AI Engine running"})
 
 from auth import auth_router
 app.include_router(auth_router)
@@ -512,7 +514,7 @@ async def home(
     age: int = 18,
     family: str = "false",
     children: str = "false",
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     family_mode = family.lower() in ("true", "1", "yes")
     children_mode = children.lower() in ("true", "1", "yes")
@@ -617,7 +619,7 @@ def recommend_multi(
     children: str = "false",
     local_hour: int | None = None,
     mood: str = "",
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     """Multi-User Conflict Resolver (Family Mode)"""
     user_id_list = [int(uid.strip()) for uid in user_ids.split(",") if uid.strip().isdigit()]
@@ -752,7 +754,7 @@ def recommend(
     local_hour: int | None = None,
     mood: str = "",
     max_duration: int | None = None,
-    db: Session = Depends(get_db)
+    db = Depends(get_db)
 ):
     try:
         numeric_user_id = int(user_id)
@@ -901,7 +903,7 @@ class PreferenceUpdateData(BaseModel):
     is_liked: bool
 
 @app.get("/api/user/{user_id}/preferences")
-def get_user_preferences(user_id: int, db: Session = Depends(get_db)):
+def get_user_preferences(user_id: int, db = Depends(get_db)):
     """Explainable AI: Returns user's genre distribution and dropped genres."""
     movies_df = _get_movies_df()
     if movies_df.empty:
