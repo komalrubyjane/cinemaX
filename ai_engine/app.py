@@ -1,4 +1,8 @@
 from pathlib import Path
+from datetime import datetime
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import pandas as pd
 from pydantic import BaseModel
@@ -34,27 +38,36 @@ app.include_router(smart_router)
 
 # Start the background recommendation engine (non-blocking)
 import recommender as rec_engine
-rec_engine.init_async()
+try:
+    rec_engine.init_async()
+except Exception as _e:
+    print(f"[Startup] Warning: recommender init failed — {_e}")
 
 BASE_DIR = Path(__file__).resolve().parent
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+try:
+    app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+except Exception as _e:
+    print(f"[Startup] Warning: could not mount /static — {_e}")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 # Seed default users if they don't exist
 from database import SessionLocal
-with SessionLocal() as db:
-    admin_user = db.query(User).filter(User.username == "admin").first()
-    if not admin_user:
-        db.add(User(username="admin", password="1234", age=25)) # Default admin password
-    else:
-        admin_user.password = "1234"
-        
-    normal_user = db.query(User).filter(User.username == "user").first()
-    if not normal_user:
-        db.add(User(username="user", password="1234", age=20))
-    else:
-        normal_user.password = "1234"
-    db.commit()
+try:
+    with SessionLocal() as db:
+        admin_user = db.query(User).filter(User.username == "admin").first()
+        if not admin_user:
+            db.add(User(username="admin", password="1234", age=25)) # Default admin password
+        else:
+            admin_user.password = "1234"
+            
+        normal_user = db.query(User).filter(User.username == "user").first()
+        if not normal_user:
+            db.add(User(username="user", password="1234", age=20))
+        else:
+            normal_user.password = "1234"
+        db.commit()
+except Exception as _e:
+    print(f"[Startup] Warning: could not seed default users — {_e}")
 
 # Content rating order (strictest to most permissive)
 RATING_ORDER = ["G", "PG", "PG-13", "R", "NC-17"]
