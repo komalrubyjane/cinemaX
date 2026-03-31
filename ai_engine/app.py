@@ -1,24 +1,14 @@
-import sys
-import os
-import traceback
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+app = FastAPI()
 
-try:
-    from app_real import *  # Import all globals such as _get_movies_df
-    from app_real import app # Import the real ASGI FastAPI app
-except Exception as e:
-    err_text = traceback.format_exc()
-    import fastapi
-    from fastapi import FastAPI, Request
-    from fastapi.responses import PlainTextResponse
-    
-    app = FastAPI()
-    
-    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-    def catch_all(path: str, request: Request):
-        return PlainTextResponse(err_text, status_code=500)
-    
-    def _get_movies_df():
-        import pandas as pd
-        return pd.DataFrame()
+@app.middleware("http")
+async def rewrite_vercel_paths(request, call_next):
+    if request.scope["path"].startswith("/api/ai/"):
+        request.scope["path"] = request.scope["path"].replace("/api/ai/", "/api/", 1)
+    return await call_next(request)
+
+@app.get("/api/health")
+def health():
+    return JSONResponse({"status": "minimal alive config test"})
