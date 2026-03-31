@@ -1,9 +1,5 @@
 fastapi
 uvicorn
-pandas
-numpy
-scikit-learn
-joblib
 jinja2
 python-multipart
 PyJWT
@@ -12,5 +8,5 @@ bcrypt
 websockets
 aiofiles
 requests
-supabase>=2.10.0
 httpx
+
