@@ -280,62 +280,32 @@ def background_scrape_and_update(movie_id: int, title: str, clean_title: str, ge
         print(f"Error saving movie to Supabase: {e}")
 
 @movie_router.get("/{movie_id}")
-def get_movie_details(movie_id: int, background_tasks: BackgroundTasks, db = Depends(get_db)):
-    # 1. First check the new HD Database
-    db_movie_list = db.table("movies").select("*").eq("movie_id", movie_id).execute().data
-    db_movie = db_movie_list[0] if db_movie_list else None
-
-    # 2. If it exists in DB with full data including real cast (not placeholder), return it
-    if db_movie and db_movie.get("description") and db_movie.get("cast") and "Actor 1" not in db_movie.get("cast", ""):
-        cast_str = db_movie.get("cast", "")
-        return {
-            "movie_id": db_movie.get("movie_id"),
-            "title": db_movie.get("title"),
-            "genres": db_movie.get("genres", "").split("|") if db_movie.get("genres") else ["Drama"],
-            "rating": db_movie.get("rating") or round(random.uniform(6.5, 9.5), 1),
-            "release_year": db_movie.get("release_year") or 2020,
-            "duration": db_movie.get("duration") or 120,
-            "languages": db_movie.get("languages", "").split(",") if db_movie.get("languages") else ["English", "Hindi"],
-            "description": db_movie.get("description"),
-            "trailer_url": f"https://www.youtube.com/results?search_query={db_movie.get('title', '').replace(' ', '+')}+trailer",
-            "poster": f"/api/ai/poster/{movie_id}",
-            "cast": [{"name": c.strip(), "image": f"https://ui-avatars.com/api/?name={urllib.parse.quote(c.strip())}&background=random&color=fff&size=200"} for c in cast_str.split(",")] if cast_str else [],
-            "director": db_movie.get('director') or "Unknown",
-            "hero": db_movie.get('hero') or "Unknown",
-            "heroine": db_movie.get('heroine') or "Unknown",
-            "producers": db_movie.get('producers', "").split(",") if db_movie.get('producers') else ["Unknown"],
-        }
-
-    # 3. Look up the movie from CSV for fast fallback return
+def get_movie_details(movie_id: int, background_tasks: BackgroundTasks):
+    """Always return instantly from CSV. No DB lookup here — use /cast for enriched data."""
     from app import _get_movies_df
     df = _get_movies_df()
     if df.empty:
-        raise HTTPException(status_code=404, detail="Movie not found")
-    row = df[df["movieId"] == movie_id]
+        raise HTTPException(status_code=404, detail="Movie data unavailable")
 
+    row = df[df["movieId"] == movie_id]
     if row.empty:
         raise HTTPException(status_code=404, detail="Movie not found")
 
     m = row.iloc[0]
     title = m["title"]
-
-    # Extract year from title if present "Title (Year)"
     year_match = re.search(r'\((\d{4})\)', title)
     year = int(year_match.group(1)) if year_match else 2020
     clean_title = re.sub(r'\(\d{4}\)', '', title).strip()
-
     genres_list = str(m.get("genres", m.get("genre", "Drama"))).split("|")
-
-    # 4. Return INSTANT data from CSV — no waiting for scraping!
-    description = f"{clean_title} is a captivating {genres_list[0].lower()} film that has won the hearts of audiences worldwide."
     duration = int(m.get("duration", 120)) if pd.notna(m.get("duration")) else 120
+
+    description = f"{clean_title} is a captivating {genres_list[0].lower()} film that has won the hearts of audiences worldwide."
     poster_url = f"/api/ai/poster/{movie_id}"
-    languages = ["English"]
-    
-    # Kick off background scrape (fire-and-forget, won't block response)
+
+    # Kick off background scrape so /cast will be ready next time
     background_tasks.add_task(
         background_scrape_and_update,
-        movie_id, title, clean_title, genres_list, year, duration, languages, description, poster_url
+        movie_id, title, clean_title, genres_list, year, duration, ["English"], description, poster_url
     )
 
     return {
@@ -345,7 +315,7 @@ def get_movie_details(movie_id: int, background_tasks: BackgroundTasks, db = Dep
         "rating": round(random.uniform(7.0, 9.5), 1),
         "release_year": year,
         "duration": duration,
-        "languages": languages,
+        "languages": ["English"],
         "description": description,
         "trailer_url": f"https://www.youtube.com/results?search_query={clean_title.replace(' ', '+')}+trailer",
         "poster": poster_url,

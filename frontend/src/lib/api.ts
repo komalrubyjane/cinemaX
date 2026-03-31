@@ -30,6 +30,24 @@ export interface MovieDetail {
     heroine?: string;
 }
 
+// Auto-retry with exponential backoff — handles Vercel cold starts
+async function fetchWithRetry(url: string, options: RequestInit = {}, retries = 3): Promise<Response> {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout per attempt
+            const res = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timeout);
+            if (res.ok || res.status === 404) return res; // don't retry 404s
+            throw new Error(`HTTP ${res.status}`);
+        } catch (err) {
+            if (i === retries - 1) throw err;
+            await new Promise(r => setTimeout(r, 1500 * (i + 1))); // 1.5s, 3s delay
+        }
+    }
+    throw new Error("Max retries exceeded");
+}
+
 // Function to attach Supabase auth token if provided
 const getHeaders = (token?: string | null) => {
     const headers: Record<string, string> = { 
@@ -54,7 +72,7 @@ export async function fetchMovies(userId?: string): Promise<Record<string, Movie
 }
 
 export async function fetchMovieDetail(id: number): Promise<MovieDetail> {
-    const res = await fetch(`${PYTHON_BASE}/movies/${id}`, { 
+    const res = await fetchWithRetry(`${PYTHON_BASE}/movies/${id}`, { 
         headers: { "Bypass-Tunnel-Reminder": "true" },
         cache: "no-store" 
     });
@@ -62,7 +80,7 @@ export async function fetchMovieDetail(id: number): Promise<MovieDetail> {
 }
 
 export async function fetchSimilarMovies(id: number): Promise<MovieSummary[]> {
-    const res = await fetch(`${PYTHON_BASE}/movies/${id}/similar`, { 
+    const res = await fetchWithRetry(`${PYTHON_BASE}/movies/${id}/similar`, { 
         headers: { "Bypass-Tunnel-Reminder": "true" },
         cache: "no-store" 
     });
@@ -70,7 +88,7 @@ export async function fetchSimilarMovies(id: number): Promise<MovieSummary[]> {
 }
 
 export async function fetchMovieCast(id: number): Promise<any> {
-    const res = await fetch(`${PYTHON_BASE}/movies/${id}/cast`, { 
+    const res = await fetchWithRetry(`${PYTHON_BASE}/movies/${id}/cast`, { 
         headers: { "Bypass-Tunnel-Reminder": "true" },
         cache: "no-store" 
     });
