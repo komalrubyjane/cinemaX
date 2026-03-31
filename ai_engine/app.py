@@ -2,6 +2,8 @@ from pathlib import Path
 from datetime import datetime
 import sys
 import os
+import urllib.request
+import urllib.parse
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import pandas as pd
@@ -261,7 +263,6 @@ def scrape_poster_url(movie_id: int) -> str | None:
                 wiki_url = f"https://en.wikipedia.org/w/api.php?action=query&titles={urllib.parse.quote(clean_title + ' film')}&prop=pageimages&format=json&pithumbsize=500"
                 req = urllib.request.Request(wiki_url, headers={'User-Agent': 'Mozilla/5.0'})
                 res = urllib.request.urlopen(req, timeout=3).read().decode('utf-8')
-                import json
                 pages = json.loads(res).get("query", {}).get("pages", {})
                 for page_id, page_data in pages.items():
                     if "thumbnail" in page_data:
