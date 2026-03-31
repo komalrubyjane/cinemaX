@@ -20,11 +20,17 @@ export default function VideoItemWithHover({ video }: VideoItemWithHoverProps) {
     }
   }, [isHovered]);
 
+  const imgSrc = video.backdrop_path
+    ? `${configuration?.images.base_url}w300${video.backdrop_path}`
+    : video.poster_path
+      ? `${configuration?.images.base_url}w300${video.poster_path}`
+      : `https://via.placeholder.com/300x170/141414/E50914?text=${encodeURIComponent(video.title || "CINEMAX")}`;
+
   return (
     <VideoItemWithHoverPure
       ref={elementRef}
       handleHover={setIsHovered}
-      src={`${configuration?.images.base_url}w300${video.backdrop_path}`}
+      src={imgSrc}
     />
   );
 }

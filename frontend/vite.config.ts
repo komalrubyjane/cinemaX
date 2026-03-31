@@ -4,5 +4,18 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), tsconfigPaths()]
+  plugins: [react(), tsconfigPaths()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/recommend': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+
+    }
+  }
 })

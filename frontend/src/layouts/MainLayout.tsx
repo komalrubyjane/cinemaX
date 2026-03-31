@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigation } from "react-router-dom";
+import { Outlet, useLocation, useNavigation, Navigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 
 import DetailModal from "src/components/DetailModal";
@@ -8,11 +8,17 @@ import PortalProvider from "src/providers/PortalProvider";
 import { MAIN_PATH } from "src/constant";
 import { Footer, MainHeader } from "src/components/layouts";
 import MainLoadingScreen from "src/components/MainLoadingScreen";
+import MovieChatbot from "src/components/MovieChatbot";
 
 export default function MainLayout() {
   const location = useLocation();
   const navigation = useNavigation();
-  // console.log("Nav Stat: ", navigation.state);
+  const isAuthenticated = !!localStorage.getItem("token");
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <Box
       sx={{
@@ -26,12 +32,12 @@ export default function MainLayout() {
       <DetailModalProvider>
         <DetailModal />
         <PortalProvider>
-          {/* <MainLoadingScreen /> */}
           <Outlet />
           <VideoPortalContainer />
         </PortalProvider>
       </DetailModalProvider>
       {location.pathname !== `/${MAIN_PATH.watch}` && <Footer />}
+      <MovieChatbot />
     </Box>
   );
 }

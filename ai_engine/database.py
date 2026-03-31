@@ -10,10 +10,10 @@ from supabase import create_client, Client
 from datetime import datetime
 import os
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://msnjqsujvklzelidszgn.supabase.co")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://nwufkntgqrvbtgrsbldw.supabase.co")
 SUPABASE_KEY = os.environ.get(
     "SUPABASE_KEY",
-    "sb_publishable_yJonjimN2K-kZX1MmWB7gg_lQd0JmJe",
+    "sb_publishable_M1E92lrwu9suWYGKbDMegQ_3rMY5_L1",
 )
 
 class _NullResult:

@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Player from "video.js/dist/types/player";
 import { Box, Stack, Typography } from "@mui/material";
@@ -13,6 +13,7 @@ import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 
 import useWindowSize from "src/hooks/useWindowSize";
 import { formatTime } from "src/utils/common";
+import { TMDB_V3_API_KEY } from "src/constant";
 
 import MaxLineTypography from "src/components/MaxLineTypography";
 import VolumeControllers from "src/components/watch/VolumeControllers";
@@ -36,26 +37,63 @@ export function Component() {
   const [playerInitialized, setPlayerInitialized] = useState(false);
 
   const windowSize = useWindowSize();
+  // Get movie ID from URL search params to load its specific trailer
+  const searchParams = new URLSearchParams(window.location.search);
+  const movieId = searchParams.get("id");
+  const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const [movieTitle, setMovieTitle] = useState("Now Playing");
+
+  useEffect(() => {
+    if (movieId) {
+      // Fetch trailers
+      fetch(`https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${TMDB_V3_API_KEY}`)
+        .then(r => r.json())
+        .then(data => {
+          const trailer = data.results?.find((v: any) => v.type === "Trailer" && v.site === "YouTube")
+            || data.results?.find((v: any) => v.site === "YouTube")
+            || data.results?.[0];
+          if (trailer) setTrailerKey(trailer.key);
+        })
+        .catch(() => {});
+
+      // Fetch movie details for the title
+      fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_V3_API_KEY}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.title) setMovieTitle(data.title);
+        })
+        .catch(() => {});
+    }
+  }, [movieId]);
+
   const videoJsOptions = useMemo(() => {
+    // Use YouTube trailer if available, otherwise fall back to sample HLS
+    if (trailerKey) {
+      return {
+        preload: "metadata" as const,
+        autoplay: true,
+        controls: false,
+        width: windowSize.width,
+        height: windowSize.height,
+        techOrder: ["youtube"],
+        sources: [{ type: "video/youtube", src: `https://www.youtube.com/watch?v=${trailerKey}` }],
+      };
+    }
     return {
-      preload: "metadata",
+      preload: "metadata" as const,
       autoplay: true,
       controls: false,
-      // responsive: true,
-      // fluid: true,
       width: windowSize.width,
       height: windowSize.height,
       sources: [
         {
-          // src: videoData?.video,
-          // src: "https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8",
           src: "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
           type: "application/x-mpegurl",
         },
       ],
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [windowSize]);
+  }, [windowSize, trailerKey]);
 
   const handlePlayerReady = function (player: Player): void {
     player.on("pause", () => {
@@ -141,7 +179,7 @@ export function Component() {
                   color: "white",
                 }}
               >
-                Title
+                {movieTitle}
               </Typography>
             </Box>
             <Box
@@ -236,7 +274,7 @@ export function Component() {
                     textAlign="center"
                     sx={{ maxWidth: 300, mx: "auto", color: "white" }}
                   >
-                    Description
+                    {movieTitle}
                   </MaxLineTypography>
                 </Box>
                 {/* end middle time */}

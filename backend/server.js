@@ -44,7 +44,7 @@ app.use('/api/profiles', require('./routes/profiles'));
 app.use('/api/movies', require('./routes/movies'));
 
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', service: 'CineMatch Backend' });
+    res.json({ status: 'ok', service: 'CINEMAX Backend' });
 });
 
 // Socket.io for Watch Party

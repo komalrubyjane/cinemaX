@@ -87,19 +87,51 @@ const extendedApi = tmdbApi.injectEndpoints({
       },
       { mediaType: MEDIA_TYPE; apiString: string; page: number }
     >({
-      query: ({ mediaType, apiString, page }) => ({
-        url: `/${mediaType}/${apiString}`,
-        params: { api_key: TMDB_V3_API_KEY, page },
-      }),
-      transformResponse: (
-        response: PaginatedMovieResult,
-        _,
-        { mediaType, apiString }
-      ) => {
+      async queryFn(arg, queryApi, extraOptions, baseQuery) {
+        if (arg.apiString === "cinemax_recs") {
+          try {
+            const res = await fetch(`/recommend/1`);
+            const data = await res.json();
+            const mappedResults = Array.isArray(data) ? data.map((m: any) => ({
+              id: m.movieId,
+              title: m.title,
+              name: m.title,
+              backdrop_path: m.poster,
+              poster_path: m.poster,
+              overview: m.reasons ? m.reasons.join(", ") : (m.genre || ""),
+              media_type: arg.mediaType,
+            })) : [];
+            return {
+              data: {
+                page: 1,
+                results: mappedResults,
+                total_pages: 1,
+                total_results: mappedResults.length,
+                mediaType: arg.mediaType,
+                itemKey: arg.apiString,
+              }
+            };
+          } catch (e: any) {
+            return { error: { status: 500, data: e } };
+          }
+        }
+        
+        // For normal TMDB requests
+        const result = await baseQuery({
+          url: `/${arg.mediaType}/${arg.apiString}`,
+          params: { api_key: TMDB_V3_API_KEY, page: arg.page },
+        });
+        
+        if (result.error) {
+          return { error: result.error };
+        }
+        
         return {
-          ...response,
-          mediaType,
-          itemKey: apiString,
+          data: {
+            ...(result.data as any),
+            mediaType: arg.mediaType,
+            itemKey: arg.apiString,
+          }
         };
       },
     }),

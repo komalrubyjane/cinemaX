@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Stack from "@mui/material/Stack";
 import Card from "@mui/material/Card";
@@ -7,6 +8,7 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Movie } from "src/types/Movie";
 import { usePortal } from "src/providers/PortalProvider";
@@ -32,12 +34,42 @@ export default function VideoCardModal({
   anchorElement,
 }: VideoCardModalProps) {
   const navigate = useNavigate();
-
   const { data: configuration } = useGetConfigurationQuery(undefined);
   const { data: genres } = useGetGenresQuery(MEDIA_TYPE.Movie);
   const setPortal = usePortal();
   const rect = anchorElement.getBoundingClientRect();
   const { setDetailType } = useDetailModal();
+
+  // Watchlist state
+  const [inList, setInList] = useState(() => {
+    const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+    return cur.some((m: any) => m.id === video.id);
+  });
+
+  const handleAddToList = () => {
+    const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+    if (inList) {
+      localStorage.setItem('watchlist', JSON.stringify(cur.filter((m: any) => m.id !== video.id)));
+      setInList(false);
+    } else {
+      cur.push({
+        id: video.id,
+        title: video.title,
+        poster_path: video.poster_path,
+        backdrop_path: video.backdrop_path,
+        overview: video.overview,
+        release_date: video.release_date,
+      });
+      localStorage.setItem('watchlist', JSON.stringify(cur));
+      setInList(true);
+    }
+  };
+
+  const imgSrc = video.backdrop_path
+    ? `${configuration?.images.base_url}w780${video.backdrop_path}`
+    : video.poster_path
+      ? `${configuration?.images.base_url}w780${video.poster_path}`
+      : `https://image.tmdb.org/t/p/w780${video.backdrop_path || video.poster_path || ''}`;
 
   return (
     <Card
@@ -57,7 +89,10 @@ export default function VideoCardModal({
         }}
       >
         <img
-          src={`${configuration?.images.base_url}w780${video.backdrop_path}`}
+          src={imgSrc}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = `https://via.placeholder.com/780x439/141414/E50914?text=${encodeURIComponent(video.title || "CINEMAX")}`;
+          }}
           style={{
             top: 0,
             height: "100%",
@@ -98,12 +133,16 @@ export default function VideoCardModal({
           <Stack direction="row" spacing={1}>
             <NetflixIconButton
               sx={{ p: 0 }}
-              onClick={() => navigate(`/${MAIN_PATH.watch}`)}
+              onClick={() => navigate(`/${MAIN_PATH.watch}?id=${video.id}`)}
             >
               <PlayCircleIcon sx={{ width: 40, height: 40 }} />
             </NetflixIconButton>
-            <NetflixIconButton>
-              <AddIcon />
+            <NetflixIconButton onClick={handleAddToList}>
+              {inList ? (
+                <CheckIcon sx={{ color: "#4caf50" }} />
+              ) : (
+                <AddIcon />
+              )}
             </NetflixIconButton>
             <NetflixIconButton>
               <ThumbUpOffAltIcon />
@@ -128,7 +167,7 @@ export default function VideoCardModal({
             )}`}</Typography>
             <QualityChip label="HD" />
           </Stack>
-          {genres && (
+          {genres && video.genre_ids && (
             <GenreBreadcrumbs
               genres={genres
                 .filter((genre) => video.genre_ids.includes(genre.id))

@@ -57,12 +57,13 @@ export default function SearchBox() {
         placeholder="Titles, people, genres"
         inputProps={{
           "aria-label": "search",
-          onFocus: () => {
-            setIsFocused(true);
-          },
-          onBlur: () => {
-            setIsFocused(false);
-          },
+          onFocus: () => setIsFocused(true),
+          onBlur: () => setIsFocused(false),
+          onKeyDown: (e: any) => {
+            if (e.key === "Enter" && e.target.value.trim()) {
+              window.location.href = `/search?q=${encodeURIComponent(e.target.value.trim())}`;
+            }
+          }
         }}
       />
     </Search>

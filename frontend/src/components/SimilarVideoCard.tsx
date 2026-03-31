@@ -1,8 +1,10 @@
+import { useState } from "react";
 import Stack from "@mui/material/Stack";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import AddIcon from "@mui/icons-material/Add";
+import CheckIcon from "@mui/icons-material/Check";
 import { Movie } from "src/types/Movie";
 import NetflixIconButton from "./NetflixIconButton";
 import MaxLineTypography from "./MaxLineTypography";
@@ -17,6 +19,36 @@ interface SimilarVideoCardProps {
 export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
   const { data: configuration } = useGetConfigurationQuery(undefined);
 
+  const [inList, setInList] = useState(() => {
+    const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+    return cur.some((m: any) => m.id === video.id);
+  });
+
+  const handleAddToList = () => {
+    const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+    if (inList) {
+      localStorage.setItem('watchlist', JSON.stringify(cur.filter((m: any) => m.id !== video.id)));
+      setInList(false);
+    } else {
+      cur.push({
+        id: video.id,
+        title: video.title,
+        poster_path: video.poster_path,
+        backdrop_path: video.backdrop_path,
+        overview: video.overview,
+        release_date: video.release_date,
+      });
+      localStorage.setItem('watchlist', JSON.stringify(cur));
+      setInList(true);
+    }
+  };
+
+  const imgSrc = video.backdrop_path
+    ? `${configuration?.images.base_url}w780${video.backdrop_path}`
+    : video.poster_path
+      ? `${configuration?.images.base_url}w780${video.poster_path}`
+      : `https://image.tmdb.org/t/p/w780${video.backdrop_path || video.poster_path || ''}`;
+
   return (
     <Card>
       <div
@@ -27,7 +59,10 @@ export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
         }}
       >
         <img
-          src={`${configuration?.images.base_url}w780${video.backdrop_path}`}
+          src={imgSrc}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = `https://via.placeholder.com/780x439/141414/E50914?text=${encodeURIComponent(video.title || "CINEMAX")}`;
+          }}
           style={{
             top: 0,
             height: "100%",
@@ -76,13 +111,17 @@ export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
               <Stack direction="row" spacing={1} alignItems="center">
                 <AgeLimitChip label={`${getRandomNumber(20)}+`} />
                 <Typography variant="body2">
-                  {video.release_date.substring(0, 4)}
+                  {(video.release_date || "").substring(0, 4)}
                 </Typography>
               </Stack>
             </div>
             <div style={{ flexGrow: 1 }} />
-            <NetflixIconButton>
-              <AddIcon />
+            <NetflixIconButton onClick={handleAddToList}>
+              {inList ? (
+                <CheckIcon sx={{ color: "#4caf50" }} />
+              ) : (
+                <AddIcon />
+              )}
             </NetflixIconButton>
           </Stack>
           <MaxLineTypography maxLine={4} variant="subtitle2">

@@ -29,6 +29,9 @@ class VideoItemWithHoverPure extends PureComponent<VideoItemWithHoverPureType> {
             position: "absolute",
             borderRadius: "4px",
           }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x170/141414/E50914?text=CINEMAX";
+          }}
           onPointerEnter={() => {
             // console.log("onPointerEnter");
             this.props.handleHover(true);

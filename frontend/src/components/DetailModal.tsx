@@ -167,9 +167,32 @@ export default function DetailModal() {
                   {detail.mediaDetail?.title}
                 </MaxLineTypography>
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                  <PlayButton sx={{ color: "black", py: 0 }} />
-                  <NetflixIconButton>
-                    <AddIcon />
+                  <PlayButton sx={{ color: "black", py: 0 }} movieId={detail.mediaDetail?.id} />
+                  <NetflixIconButton
+                    onClick={() => {
+                      if (!detail.mediaDetail) return;
+                      const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+                      const exists = cur.find((m: any) => m.id === detail.mediaDetail?.id);
+                      if (exists) {
+                        localStorage.setItem('watchlist', JSON.stringify(cur.filter((m: any) => m.id !== detail.mediaDetail?.id)));
+                        setDetailType({ ...detail }); // force re-render
+                      } else {
+                        cur.push({
+                          id: detail.mediaDetail.id,
+                          title: detail.mediaDetail.title,
+                          poster_path: detail.mediaDetail.poster_path,
+                          backdrop_path: detail.mediaDetail.backdrop_path,
+                          overview: detail.mediaDetail.overview
+                        });
+                        localStorage.setItem('watchlist', JSON.stringify(cur));
+                        setDetailType({ ...detail }); // force re-render
+                      }
+                    }}
+                  >
+                    <AddIcon sx={{ color: (() => {
+                      const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+                      return cur.find((m: any) => m.id === detail.mediaDetail?.id) ? '#E50914' : 'inherit';
+                    })() }} />
                   </NetflixIconButton>
                   <NetflixIconButton>
                     <ThumbUpOffAltIcon />

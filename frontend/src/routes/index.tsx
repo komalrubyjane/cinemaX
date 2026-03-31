@@ -6,15 +6,39 @@ import MainLayout from "src/layouts/MainLayout";
 const router = createBrowserRouter([
   {
     path: "/",
+    lazy: () => import("src/pages/Landing"),
+  },
+  {
+    path: "/login",
+    lazy: () => import("src/pages/Login"),
+  },
+  {
+    path: "/signup",
+    lazy: () => import("src/pages/Signup"),
+  },
+  {
+    path: "/",
     element: <MainLayout />,
     children: [
       {
-        path: MAIN_PATH.root,
-        element: <Navigate to={`/${MAIN_PATH.browse}`} />,
+        path: "/profiles",
+        lazy: () => import("src/pages/Profiles"),
       },
       {
         path: MAIN_PATH.browse,
         lazy: () => import("src/pages/HomePage"),
+      },
+      {
+        path: "/search",
+        lazy: () => import("src/pages/Search"),
+      },
+      {
+        path: "/watchlist",
+        lazy: () => import("src/pages/Watchlist"),
+      },
+      {
+        path: "/party/:id",
+        lazy: () => import("src/pages/WatchParty"),
       },
       {
         path: MAIN_PATH.genreExplore,
