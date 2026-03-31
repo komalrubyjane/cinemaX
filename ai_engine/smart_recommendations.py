@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 from database import get_db, WatchHistory
 from pathlib import Path
 import pandas as pd
