@@ -96,10 +96,10 @@ export default function DetailModal() {
                   sources: [
                     {
                       type: "video/youtube",
-                      src: `https://www.youtube.com/watch?v=${
+                      src: `https://www.youtube.com/embed/${
                         detail.mediaDetail?.videos.results[0]?.key ||
                         "L3oOldViIgY"
-                      }`,
+                      }?enablejsapi=1&origin=${window.location.origin}&autoplay=1&mute=1&loop=1&controls=0&rel=0&playsinline=1`,
                     },
                   ],
                 }}

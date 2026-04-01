@@ -76,7 +76,7 @@ export function Component() {
         width: windowSize.width,
         height: windowSize.height,
         techOrder: ["youtube"],
-        sources: [{ type: "video/youtube", src: `https://www.youtube.com/watch?v=${trailerKey}` }],
+        sources: [{ type: "video/youtube", src: `https://www.youtube.com/embed/${trailerKey}?enablejsapi=1&origin=${window.location.origin}&autoplay=1&controls=0&rel=0&playsinline=1` }],
       };
     }
     return {

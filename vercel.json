@@ -62,8 +62,12 @@
       "destination": "/backend/server.js"
     },
     {
+      "source": "/assets/:path*",
+      "destination": "/frontend/assets/:path*"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/frontend/$1"
+      "destination": "/frontend/index.html"
     }
   ],
   "env": {
