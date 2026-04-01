@@ -3,7 +3,6 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import Player from "video.js/dist/types/player";
 
 import { getRandomNumber } from "src/utils/common";
 import MaxLineTypography from "./MaxLineTypography";
@@ -19,7 +18,6 @@ import {
   useLazyGetAppendedVideosQuery,
 } from "src/store/slices/discover";
 import { Movie } from "src/types/Movie";
-import VideoJSPlayer from "./watch/VideoJSPlayer";
 
 interface TopTrailerProps {
   mediaType: MEDIA_TYPE;
@@ -34,28 +32,16 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
   const [getVideoDetail, { data: detail }] = useLazyGetAppendedVideosQuery();
   const [video, setVideo] = useState<Movie | null>(null);
   const [muted, setMuted] = useState(true);
-  const playerRef = useRef<Player | null>(null);
+  const [videoKey, setVideoKey] = useState<string | null>(null);
   const isOffset = useOffSetTop(window.innerWidth * 0.5625);
   const { setDetailType } = useDetailModal();
   const maturityRate = useMemo(() => {
     return getRandomNumber(20);
   }, []);
 
-  const handleReady = useCallback((player: Player) => {
-    playerRef.current = player;
-  }, []);
-
-  useEffect(() => {
-    if (playerRef.current) {
-      if (isOffset) {
-        playerRef.current.pause();
-      } else {
-        if (playerRef.current.paused()) {
-          playerRef.current.play();
-        }
-      }
-    }
-  }, [isOffset]);
+  // No-op: iframe YouTube pause/play is not programmatically controllable
+  // isOffset used to hide/show the iframe instead
+  const _ = isOffset; // prevent unused var warning
 
   useEffect(() => {
     if (data && data.results) {
@@ -72,11 +58,18 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [video]);
 
-  const handleMute = useCallback((status: boolean) => {
-    if (playerRef.current) {
-      playerRef.current.muted(!status);
-      setMuted(!status);
+  useEffect(() => {
+    if (detail?.videos?.results?.length) {
+      const trailer =
+        detail.videos.results.find((v: any) => v.type === "Trailer" && v.site === "YouTube") ||
+        detail.videos.results.find((v: any) => v.site === "YouTube") ||
+        detail.videos.results[0];
+      if (trailer?.key) setVideoKey(trailer.key);
     }
+  }, [detail]);
+
+  const handleMute = useCallback((status: boolean) => {
+    setMuted(!status);
   }, []);
 
   return (
@@ -109,26 +102,38 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   position: "absolute",
                 }}
               >
-                {detail && (
-                  <VideoJSPlayer
-                    options={{
-                      loop: true,
-                      muted: true,
-                      autoplay: true,
-                      controls: false,
-                      responsive: true,
-                      fluid: true,
-                      techOrder: ["youtube"],
-                      sources: [
-                        {
-                          type: "video/youtube",
-                          src: `https://www.youtube.com/embed/${
-                            detail.videos.results[0]?.key || "L3oOldViIgY"
-                          }?enablejsapi=1&origin=${window.location.origin}&autoplay=1&mute=1&loop=1&controls=0&rel=0&playsinline=1`,
-                        },
-                      ],
+                {videoKey && !isOffset && (
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0, left: 0, right: 0, bottom: 0,
+                      overflow: "hidden",
+                      pointerEvents: "none",
                     }}
-                    onReady={handleReady}
+                  >
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${videoKey}&controls=0&rel=0&playsinline=1&modestbranding=1&showinfo=0`}
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: "100%",
+                        height: "100%",
+                        border: "none",
+                      }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="hero-trailer"
+                    />
+                  </Box>
+                )}
+                {!videoKey && video?.backdrop_path && (
+                  <Box
+                    component="img"
+                    src={`https://image.tmdb.org/t/p/original${video.backdrop_path}`}
+                    alt={video.title}
+                    sx={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
                   />
                 )}
                 <Box

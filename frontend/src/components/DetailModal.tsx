@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useRef, useState } from "react";
+import { forwardRef, useCallback, useMemo, useState } from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Container from "@mui/material/Container";
@@ -14,7 +14,6 @@ import AddIcon from "@mui/icons-material/Add";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-import Player from "video.js/dist/types/player";
 
 import MaxLineTypography from "./MaxLineTypography";
 import PlayButton from "./PlayButton";
@@ -26,7 +25,6 @@ import SimilarVideoCard from "./SimilarVideoCard";
 import { useDetailModal } from "src/providers/DetailModalProvider";
 import { useGetSimilarVideosQuery } from "src/store/slices/discover";
 import { MEDIA_TYPE } from "src/types/Common";
-import VideoJSPlayer from "./watch/VideoJSPlayer";
 
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
@@ -43,20 +41,22 @@ export default function DetailModal() {
     { mediaType: detail.mediaType ?? MEDIA_TYPE.Movie, id: detail.id ?? 0 },
     { skip: !detail.id }
   );
-  const playerRef = useRef<Player | null>(null);
   const [muted, setMuted] = useState(true);
 
-  const handleReady = useCallback((player: Player) => {
-    playerRef.current = player;
-    setMuted(player.muted());
+  const handleMute = useCallback((status: boolean) => {
+    setMuted(!status);
   }, []);
 
-  const handleMute = useCallback((status: boolean) => {
-    if (playerRef.current) {
-      playerRef.current.muted(!status);
-      setMuted(!status);
-    }
-  }, []);
+  // Pick the best YouTube trailer key from the media detail
+  const trailerKey = useMemo(() => {
+    const videos = detail.mediaDetail?.videos?.results;
+    if (!videos?.length) return null;
+    const trailer =
+      videos.find((v: any) => v.type === "Trailer" && v.site === "YouTube") ||
+      videos.find((v: any) => v.site === "YouTube") ||
+      videos[0];
+    return trailer?.key ?? null;
+  }, [detail.mediaDetail]);
 
   if (detail.mediaDetail) {
     return (
@@ -85,26 +85,30 @@ export default function DetailModal() {
                 height: "calc(9 / 16 * 100%)",
               }}
             >
-              <VideoJSPlayer
-                options={{
-                  loop: true,
-                  autoplay: true,
-                  controls: false,
-                  responsive: true,
-                  fluid: true,
-                  techOrder: ["youtube"],
-                  sources: [
-                    {
-                      type: "video/youtube",
-                      src: `https://www.youtube.com/embed/${
-                        detail.mediaDetail?.videos.results[0]?.key ||
-                        "L3oOldViIgY"
-                      }?enablejsapi=1&origin=${window.location.origin}&autoplay=1&mute=1&loop=1&controls=0&rel=0&playsinline=1`,
-                    },
-                  ],
-                }}
-                onReady={handleReady}
-              />
+              {trailerKey ? (
+                <Box sx={{ position: "relative", width: "100%", paddingTop: "56.25%", bgcolor: "#000" }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${trailerKey}&controls=0&rel=0&playsinline=1&modestbranding=1&showinfo=0`}
+                    style={{
+                      position: "absolute",
+                      top: 0, left: 0,
+                      width: "100%",
+                      height: "100%",
+                      border: "none",
+                    }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={detail.mediaDetail?.title ?? "trailer"}
+                  />
+                </Box>
+              ) : detail.mediaDetail?.backdrop_path ? (
+                <Box
+                  component="img"
+                  src={`https://image.tmdb.org/t/p/original${detail.mediaDetail.backdrop_path}`}
+                  alt={detail.mediaDetail.title}
+                  sx={{ width: "100%", display: "block" }}
+                />
+              ) : null}
 
               <Box
                 sx={{
