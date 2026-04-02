@@ -75,11 +75,11 @@ export default function MovieChatbot() {
                         }}
                     >
                         {/* Header */}
-                        <Box sx={{ backgroundColor: '#87CEEB', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: "white" }}>
+                        <Box sx={{ backgroundColor: '#87CEEB', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: "black" }}>
                             <Typography variant="subtitle1" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 🍿 CINEMAX AI
                             </Typography>
-                            <IconButton size="small" sx={{ color: "white" }} onClick={() => setIsOpen(false)}>
+                            <IconButton size="small" sx={{ color: "black" }} onClick={() => setIsOpen(false)}>
                                 <CloseIcon fontSize="small" />
                             </IconButton>
                         </Box>
@@ -125,7 +125,7 @@ export default function MovieChatbot() {
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
                                         borderRadius: '24px',
-                                        color: "white",
+                                        color: "black",
                                         backgroundColor: '#2A2A2A',
                                         '& fieldset': { border: 'none' },
                                     }
@@ -136,7 +136,7 @@ export default function MovieChatbot() {
                                 disabled={loading || !input.trim()}
                                 sx={{ 
                                     backgroundColor: '#87CEEB', 
-                                    color: "white", 
+                                    color: "black", 
                                     '&:hover': { backgroundColor: '#0284c7' },
                                     '&.Mui-disabled': { backgroundColor: '#555', color: '#888' }
                                 }}
@@ -156,7 +156,7 @@ export default function MovieChatbot() {
                 sx={{
                     width: 56, height: 56,
                     backgroundColor: '#87CEEB',
-                    color: "white",
+                    color: "black",
                     boxShadow: 4,
                     '&:hover': { backgroundColor: '#0284c7' }
                 }}

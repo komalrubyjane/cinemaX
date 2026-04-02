@@ -122,7 +122,7 @@ const MainHeader = () => {
             <IconButton
               onClick={handleJoinParty}
               sx={{
-                color: "white",
+                color: "black",
                 bgcolor: "rgba(229, 9, 20, 0.2)",
                 "&:hover": { bgcolor: "rgba(229, 9, 20, 0.5)" },
                 display: { xs: "none", md: "flex" },

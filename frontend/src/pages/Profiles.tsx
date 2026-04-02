@@ -48,7 +48,7 @@ export function Component() {
         p: { xs: 2, md: 4 },
       }}
     >
-      <Typography variant="h3" sx={{ color: "white", mb: 8, fontWeight: "bold" }}>
+      <Typography variant="h3" sx={{ color: "black", mb: 8, fontWeight: "bold" }}>
         Who's watching?
       </Typography>
 
@@ -65,10 +65,10 @@ export function Component() {
               alignItems: "center",
               cursor: "pointer",
               "&:hover .profile-img": {
-                borderColor: "white",
+                bordercolor: "black",
               },
               "&:hover .profile-name": {
-                color: "white",
+                color: "black",
               },
             }}
           >
@@ -120,8 +120,8 @@ export function Component() {
           py: 1.5,
           fontSize: "1.2rem",
           "&:hover": {
-            color: "white",
-            borderColor: "white",
+            color: "black",
+            bordercolor: "black",
             bgcolor: "transparent",
           },
         }}

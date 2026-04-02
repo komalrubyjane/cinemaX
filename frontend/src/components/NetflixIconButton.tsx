@@ -6,7 +6,7 @@ const NetflixIconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     return (
       <IconButton
         sx={{
-          color: "white",
+          color: "black",
           borderWidth: "2px",
           borderStyle: "solid",
           borderColor: "grey.700",

@@ -83,7 +83,7 @@ export function Component() {
           backgroundColor: "rgba(0,0,0,0.75)",
           p: 6,
           borderRadius: 2,
-          color: "white"
+          color: "black"
         }}
       >
         <Typography variant="h4" mb={4} fontWeight="bold">
@@ -101,7 +101,7 @@ export function Component() {
               mb: 2,
               backgroundColor: "#333",
               borderRadius: 1,
-              input: { color: "white" },
+              input: { color: "black" },
               "& .MuiFilledInput-root": { backgroundColor: "#333" }
             }}
           />
@@ -116,7 +116,7 @@ export function Component() {
               mb: 4,
               backgroundColor: "#333",
               borderRadius: 1,
-              input: { color: "white" },
+              input: { color: "black" },
               "& .MuiFilledInput-root": { backgroundColor: "#333" }
             }}
           />
@@ -148,7 +148,7 @@ export function Component() {
             fullWidth
             variant="outlined"
             onClick={fillDemo}
-            sx={{ color: "white", borderColor: "rgba(255,255,255,0.4)", mb: 4, "&:hover": { borderColor: "white" } }}
+            sx={{ color: "black", borderColor: "rgba(0,0,0,0.4)", mb: 4, "&:hover": { bordercolor: "black" } }}
           >
             Use Demo Account (admin / 1234)
           </Button>
@@ -157,7 +157,7 @@ export function Component() {
         <Typography variant="body2" color="gray" sx={{ mt: 2 }}>
           New to CINEMAX?{" "}
           <span
-            style={{ color: "white", cursor: "pointer", fontWeight: "bold" }}
+            style={{ color: "black", cursor: "pointer", fontWeight: "bold" }}
             onClick={() => navigate("/signup")}
           >
             Sign up now.

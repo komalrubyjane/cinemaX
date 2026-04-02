@@ -155,7 +155,7 @@ export default function DetailModal() {
                 }}
               >
                 <CloseIcon
-                  sx={{ color: "white", fontSize: { xs: 14, sm: 22 } }}
+                  sx={{ color: "black", fontSize: { xs: 14, sm: 22 } }}
                 />
               </IconButton>
               <Box
@@ -171,7 +171,7 @@ export default function DetailModal() {
                   {detail.mediaDetail?.title}
                 </MaxLineTypography>
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                  <PlayButton sx={{ color: "white", py: 0 }} movieId={detail.mediaDetail?.id} />
+                  <PlayButton sx={{ color: "black", py: 0 }} movieId={detail.mediaDetail?.id} />
                   <NetflixIconButton
                     onClick={() => {
                       if (!detail.mediaDetail) return;

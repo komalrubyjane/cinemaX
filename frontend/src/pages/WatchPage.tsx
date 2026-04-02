@@ -107,7 +107,7 @@ function YouTubePlayer({
             <IconButton
               onClick={onBack}
               sx={{
-                color: "white",
+                color: "black",
                 bgcolor: "rgba(0,0,0,0.6)",
                 "&:hover": { bgcolor: "rgba(0,0,0,0.8)" },
               }}
@@ -129,7 +129,7 @@ function YouTubePlayer({
             <Typography
               variant="h6"
               sx={{
-                color: "white",
+                color: "black",
                 fontWeight: 700,
                 textShadow: "0 2px 8px rgba(0,0,0,0.8)",
                 textAlign: "center",
@@ -151,7 +151,7 @@ function YouTubePlayer({
             <IconButton
               onClick={handleFullscreen}
               sx={{
-                color: "white",
+                color: "black",
                 bgcolor: "rgba(0,0,0,0.6)",
                 "&:hover": { bgcolor: "rgba(0,0,0,0.8)" },
               }}
@@ -243,7 +243,7 @@ export function Component() {
           gap: 3,
         }}
       >
-        <Typography variant="h4" sx={{ color: "white", fontWeight: 700 }}>
+        <Typography variant="h4" sx={{ color: "black", fontWeight: 700 }}>
           Trailer Not Available
         </Typography>
         <Typography variant="body1" sx={{ color: "#999" }}>
@@ -252,12 +252,12 @@ export function Component() {
         <IconButton
           onClick={handleGoBack}
           sx={{
-            color: "white",
-            bgcolor: "rgba(255,255,255,0.1)",
+            color: "black",
+            bgcolor: "rgba(0,0,0,0.1)",
             px: 4,
             py: 1.5,
             borderRadius: 2,
-            "&:hover": { bgcolor: "rgba(255,255,255,0.2)" },
+            "&:hover": { bgcolor: "rgba(0,0,0,0.2)" },
           }}
         >
           <KeyboardBackspaceIcon sx={{ mr: 1 }} />

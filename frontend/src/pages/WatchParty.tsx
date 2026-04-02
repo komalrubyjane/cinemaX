@@ -168,7 +168,7 @@ export function Component() {
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
         {/* Header */}
         <Stack direction="row" alignItems="center" spacing={2}>
-          <IconButton onClick={() => navigate("/browse")} sx={{ color: "white" }}>
+          <IconButton onClick={() => navigate("/browse")} sx={{ color: "black" }}>
             <KeyboardBackspaceIcon />
           </IconButton>
           <GroupIcon sx={{ color: "#87CEEB" }} />
@@ -222,7 +222,7 @@ export function Component() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            border: "1px solid rgba(255,255,255,0.06)",
+            border: "1px solid rgba(0,0,0,0.06)",
           }}
         >
           <Box
@@ -259,7 +259,7 @@ export function Component() {
                 onClick={togglePlay}
                 sx={{
                   bgcolor: "#87CEEB",
-                  color: "white",
+                  color: "black",
                   "&:hover": { bgcolor: "#0284c7" },
                   width: 44,
                   height: 44,
@@ -277,7 +277,7 @@ export function Component() {
               />
               <Typography
                 variant="caption"
-                sx={{ fontFamily: "monospace", color: "white", minWidth: 60 }}
+                sx={{ fontFamily: "monospace", color: "black", minWidth: 60 }}
               >
                 {formatTime(progress)} / 3:00
               </Typography>
@@ -289,9 +289,9 @@ export function Component() {
         <Box
           sx={{
             p: 2,
-            bgcolor: "rgba(255,255,255,0.03)",
+            bgcolor: "rgba(0,0,0,0.03)",
             borderRadius: 2,
-            border: "1px solid rgba(255,255,255,0.06)",
+            border: "1px solid rgba(0,0,0,0.06)",
           }}
         >
           <Stack direction="row" alignItems="center" spacing={1} mb={1}>
@@ -312,7 +312,7 @@ export function Component() {
             <Chip
               label={`👤 ${username}`}
               size="small"
-              sx={{ bgcolor: "rgba(135,206,235,0.2)", color: "white", borderColor: "rgba(135,206,235,0.4)", border: "1px solid" }}
+              sx={{ bgcolor: "rgba(135,206,235,0.2)", color: "black", borderColor: "rgba(135,206,235,0.4)", border: "1px solid" }}
             />
             {participants.filter((p) => p !== username).map((p) => (
               <Chip
@@ -333,9 +333,9 @@ export function Component() {
           width: { xs: "100%", lg: 360 },
           display: "flex",
           flexDirection: "column",
-          bgcolor: "rgba(255,255,255,0.03)",
+          bgcolor: "rgba(0,0,0,0.03)",
           borderRadius: 2,
-          border: "1px solid rgba(255,255,255,0.06)",
+          border: "1px solid rgba(0,0,0,0.06)",
           overflow: "hidden",
           minHeight: { xs: 300, lg: "auto" },
         }}
@@ -343,7 +343,7 @@ export function Component() {
         <Box
           sx={{
             p: 2,
-            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            borderBottom: "1px solid rgba(0,0,0,0.08)",
             background: "linear-gradient(135deg, rgba(135,206,235,0.15), rgba(0,0,0,0))",
           }}
         >
@@ -396,7 +396,7 @@ export function Component() {
                       bgcolor:
                         msg.sender === username
                           ? "rgba(135,206,235,0.15)"
-                          : "rgba(255,255,255,0.05)",
+                          : "rgba(0,0,0,0.05)",
                       p: 1.5,
                       borderRadius: 2,
                       borderTopLeftRadius: msg.sender === username ? 8 : 2,
@@ -426,7 +426,7 @@ export function Component() {
         <Box
           sx={{
             p: 2,
-            borderTop: "1px solid rgba(255,255,255,0.08)",
+            borderTop: "1px solid rgba(0,0,0,0.08)",
             display: "flex",
             gap: 1,
           }}
@@ -440,9 +440,9 @@ export function Component() {
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendChat()}
             sx={{
               "& .MuiOutlinedInput-root": {
-                color: "white",
-                bgcolor: "rgba(255,255,255,0.05)",
-                "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
+                color: "black",
+                bgcolor: "rgba(0,0,0,0.05)",
+                "& fieldset": { borderColor: "rgba(0,0,0,0.1)" },
                 "&:hover fieldset": { borderColor: "rgba(135,206,235,0.4)" },
                 "&.Mui-focused fieldset": { borderColor: "#87CEEB" },
               },

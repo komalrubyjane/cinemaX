@@ -80,7 +80,7 @@ export function Component() {
           backgroundColor: "rgba(0,0,0,0.75)",
           p: 6,
           borderRadius: 2,
-          color: "white"
+          color: "black"
         }}
       >
         <Typography variant="h4" mb={4} fontWeight="bold">
@@ -98,7 +98,7 @@ export function Component() {
               mb: 2,
               backgroundColor: "#333",
               borderRadius: 1,
-              input: { color: "white" },
+              input: { color: "black" },
               "& .MuiFilledInput-root": { backgroundColor: "#333" }
             }}
           />
@@ -113,7 +113,7 @@ export function Component() {
               mb: 2,
               backgroundColor: "#333",
               borderRadius: 1,
-              input: { color: "white" },
+              input: { color: "black" },
               "& .MuiFilledInput-root": { backgroundColor: "#333" }
             }}
           />
@@ -128,7 +128,7 @@ export function Component() {
               mb: 4,
               backgroundColor: "#333",
               borderRadius: 1,
-              input: { color: "white" },
+              input: { color: "black" },
               "& .MuiFilledInput-root": { backgroundColor: "#333" }
             }}
           />
@@ -160,7 +160,7 @@ export function Component() {
         <Typography variant="body2" color="gray">
           Already have an account?{" "}
           <span
-            style={{ color: "white", cursor: "pointer", fontWeight: "bold" }}
+            style={{ color: "black", cursor: "pointer", fontWeight: "bold" }}
             onClick={() => navigate("/login")}
           >
             Sign in now.

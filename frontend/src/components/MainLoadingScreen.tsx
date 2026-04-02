@@ -17,7 +17,7 @@ function MainLoadingScreen() {
         zIndex: 2,
       }}
     >
-      <CircularProgress sx={{ color: "white" }} />
+      <CircularProgress sx={{ color: "black" }} />
     </div>
   );
 }

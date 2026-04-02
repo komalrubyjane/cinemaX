@@ -16,7 +16,7 @@ const StyledSlider = styled(Slider)({
   },
   "& .NetflixSlider-rail": {
     border: "none",
-    backgroundColor: "white",
+    backgroundcolor: "black",
     opacity: 0.85,
   },
   "& .NetflixSlider-thumb": {
