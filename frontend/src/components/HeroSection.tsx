@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import ReactPlayer from "react-player";
 
 import { getRandomNumber } from "src/utils/common";
 import MaxLineTypography from "./MaxLineTypography";
@@ -39,10 +40,6 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
     return getRandomNumber(20);
   }, []);
 
-  // No-op: iframe YouTube pause/play is not programmatically controllable
-  // isOffset used to hide/show the iframe instead
-  const _ = isOffset; // prevent unused var warning
-
   useEffect(() => {
     if (data && data.results) {
       const videos = data.results.filter((item) => !!item.backdrop_path);
@@ -61,7 +58,9 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
   useEffect(() => {
     if (detail?.videos?.results?.length) {
       const trailer =
-        detail.videos.results.find((v: any) => v.type === "Trailer" && v.site === "YouTube") ||
+        detail.videos.results.find(
+          (v: any) => v.type === "Trailer" && v.site === "YouTube"
+        ) ||
         detail.videos.results.find((v: any) => v.site === "YouTube") ||
         detail.videos.results[0];
       if (trailer?.key) setVideoKey(trailer.key);
@@ -102,40 +101,75 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   position: "absolute",
                 }}
               >
+                {/* ReactPlayer — hidden when user scrolls past hero */}
                 {videoKey && !isOffset && (
                   <Box
                     sx={{
                       position: "absolute",
-                      top: 0, left: 0, right: 0, bottom: 0,
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
                       overflow: "hidden",
-                      pointerEvents: "none",
                     }}
                   >
-                    <iframe
-                      src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${videoKey}&controls=0&rel=0&playsinline=1&modestbranding=1&showinfo=0`}
-                      style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                        width: "100%",
-                        height: "100%",
-                        border: "none",
+                    <ReactPlayer
+                      url={`https://www.youtube.com/watch?v=${videoKey}`}
+                      playing
+                      muted={muted}
+                      loop
+                      controls={false}
+                      width="100%"
+                      height="100%"
+                      style={{ pointerEvents: "none" }}
+                      config={{
+                        youtube: {
+                          playerVars: {
+                            autoplay: 1,
+                            controls: 0,
+                            disablekb: 1,
+                            fs: 0,
+                            iv_load_policy: 3,
+                            modestbranding: 1,
+                            rel: 0,
+                            showinfo: 0,
+                            playsinline: 1,
+                          },
+                        },
                       }}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title="hero-trailer"
+                    />
+                    {/* Transparent click-blocker so YouTube logo/overlay can't be clicked */}
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 1,
+                      }}
                     />
                   </Box>
                 )}
-                {!videoKey && video?.backdrop_path && (
+
+                {/* Fallback backdrop image when no video key */}
+                {(!videoKey || isOffset) && video?.backdrop_path && (
                   <Box
                     component="img"
                     src={`https://image.tmdb.org/t/p/original${video.backdrop_path}`}
                     alt={video.title}
-                    sx={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                    }}
                   />
                 )}
+
+                {/* Left shadow gradient */}
                 <Box
                   sx={{
                     background: `linear-gradient(77deg,rgba(0,0,0,.6),transparent 85%)`,
@@ -146,8 +180,11 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                     opacity: 1,
                     position: "absolute",
                     transition: "opacity .5s",
+                    zIndex: 2,
                   }}
                 />
+
+                {/* Bottom fade gradient */}
                 <Box
                   sx={{
                     backgroundColor: "transparent",
@@ -162,8 +199,11 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                     opacity: 1,
                     top: "auto",
                     width: "100%",
+                    zIndex: 2,
                   }}
                 />
+
+                {/* Mute / Maturity controls */}
                 <Stack
                   direction="row"
                   spacing={2}
@@ -172,12 +212,13 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                     position: "absolute",
                     right: 0,
                     bottom: "35%",
+                    zIndex: 3,
                   }}
                 >
                   <NetflixIconButton
                     size="large"
                     onClick={() => handleMute(muted)}
-                    sx={{ zIndex: 2 }}
+                    sx={{ zIndex: 3 }}
                   >
                     {!muted ? <VolumeUpIcon /> : <VolumeOffIcon />}
                   </NetflixIconButton>
@@ -185,6 +226,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                 </Stack>
               </Box>
 
+              {/* Movie title / description / buttons layer */}
               <Box
                 sx={{
                   position: "absolute",
@@ -194,6 +236,8 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   bottom: 0,
                   width: "100%",
                   height: "100%",
+                  zIndex: 3,
+                  pointerEvents: "none",
                 }}
               >
                 <Stack
@@ -206,6 +250,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                     width: "36%",
                     zIndex: 10,
                     justifyContent: "flex-end",
+                    pointerEvents: "all",
                   }}
                 >
                   <MaxLineTypography

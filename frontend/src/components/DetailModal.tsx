@@ -14,6 +14,8 @@ import AddIcon from "@mui/icons-material/Add";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import ReactPlayer from "react-player";
+const Player: any = ReactPlayer;
 
 import MaxLineTypography from "./MaxLineTypography";
 import PlayButton from "./PlayButton";
@@ -68,7 +70,7 @@ export default function DetailModal() {
         id="detail_dialog"
         TransitionComponent={Transition}
       >
-        <DialogContent sx={{ p: 0, bgcolor: "#181818" }}>
+        <DialogContent sx={{ p: 0, bgcolor: "#ffffff" }}>
           <Box
             sx={{
               top: 0,
@@ -87,19 +89,35 @@ export default function DetailModal() {
             >
               {trailerKey ? (
                 <Box sx={{ position: "relative", width: "100%", paddingTop: "56.25%", bgcolor: "#000000" }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${trailerKey}&controls=0&rel=0&playsinline=1&modestbranding=1&showinfo=0`}
-                    style={{
-                      position: "absolute",
-                      top: 0, left: 0,
-                      width: "100%",
-                      height: "100%",
-                      border: "none",
-                    }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={detail.mediaDetail?.title ?? "trailer"}
-                  />
+                  <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden" }}>
+                    <Player
+                      url={`https://www.youtube.com/watch?v=${trailerKey}`}
+                      playing
+                      muted={muted}
+                      loop
+                      controls={false}
+                      width="100%"
+                      height="100%"
+                      style={{ pointerEvents: "none" }}
+                      config={{
+                        youtube: {
+                          playerVars: {
+                            autoplay: 1,
+                            controls: 0,
+                            disablekb: 1,
+                            fs: 0,
+                            iv_load_policy: 3,
+                            modestbranding: 1,
+                            rel: 0,
+                            showinfo: 0,
+                            playsinline: 1,
+                          },
+                        } as any,
+                      }}
+                    />
+                    {/* Transparent overlay to block YouTube click targets */}
+                    <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }} />
+                  </Box>
                 </Box>
               ) : detail.mediaDetail?.backdrop_path ? (
                 <Box
@@ -146,11 +164,12 @@ export default function DetailModal() {
                   top: 15,
                   right: 15,
                   position: "absolute",
-                  bgcolor: "#181818",
+                  bgcolor: "#f5f5f5",
                   width: { xs: 22, sm: 40 },
                   height: { xs: 22, sm: 40 },
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
                   "&:hover": {
-                    bgcolor: "primary.main",
+                    bgcolor: "rgba(0,0,0,0.1)",
                   },
                 }}
               >
@@ -167,7 +186,7 @@ export default function DetailModal() {
                   px: { xs: 2, sm: 3, md: 5 },
                 }}
               >
-                <MaxLineTypography variant="h4" maxLine={1} sx={{ mb: 2 }}>
+                <MaxLineTypography variant="h4" maxLine={1} sx={{ mb: 2, color: '#141414', fontWeight: 700 }}>
                   {detail.mediaDetail?.title}
                 </MaxLineTypography>
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
@@ -236,7 +255,7 @@ export default function DetailModal() {
                       <MaxLineTypography
                         maxLine={3}
                         variant="body1"
-                        sx={{ mt: 2 }}
+                        sx={{ mt: 2, color: '#333' }}
                       >
                         {detail.mediaDetail?.overview}
                       </MaxLineTypography>

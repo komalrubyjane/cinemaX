@@ -6,19 +6,19 @@ import { formatTime } from "src/utils/common";
 const StyledSlider = styled(Slider)({
   borderRadius: 0,
   "& .NetflixSlider-track": {
-    backgroundColor: "skyblue !important",
+    backgroundColor: "#0071eb !important",
     border: 0,
   },
   "& .NetflixSlider-rail": {
     border: "none",
-    backgroundColor: "white !important",
+    backgroundColor: "#ccc !important",
     opacity: 0.85,
   },
   "& .NetflixSlider-thumb": {
     borderRadius: "50%",
     height: 10,
     width: 10,
-    backgroundColor: "skyblue",
+    backgroundColor: "#0071eb",
     "&:focus, &:hover, &.Netflix-active, &.Netflix-focusVisible": {
       boxShadow: "inherit",
       height: 15,

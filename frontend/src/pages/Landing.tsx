@@ -43,7 +43,7 @@ export function Component() {
   };
 
   return (
-    <div style={{ backgroundColor: "#000000", minHeight: "100vh" }}>
+    <div style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
       <div className="hero">
         <div className="overlay">
           <header>
@@ -57,7 +57,7 @@ export function Component() {
                   <option value="en">English</option>
                   <option value="hi">हिंदी</option>
                 </select>
-                <button onClick={() => navigate("/login")} className="sign-in-btn" style={{ border: 'none', cursor: 'pointer' }}>
+                <button onClick={() => navigate("/login")} className="sign-in-btn" style={{ border: 'none', cursor: 'pointer', backgroundColor: '#0071eb', color: 'white' }}>
                   Sign In
                 </button>
               </div>
@@ -139,10 +139,10 @@ export function Component() {
           {faqs.map((faq, index) => (
             <div className={`faq-item ${openFaq === index ? "open" : ""}`} key={index}>
               <div className="faq-question" onClick={() => toggleFaq(index)}>
-                <span>{faq.q}</span>
-                <span className="toggle">{openFaq === index ? "×" : "+"}</span>
+                <span style={{ color: '#141414' }}>{faq.q}</span>
+                <span className="toggle" style={{ color: '#141414' }}>{openFaq === index ? "×" : "+"}</span>
               </div>
-              <div className="faq-answer" style={{ display: openFaq === index ? "block" : "none" }}>
+              <div className="faq-answer" style={{ display: openFaq === index ? "block" : "none", color: '#333' }}>
                 {faq.a}
               </div>
             </div>

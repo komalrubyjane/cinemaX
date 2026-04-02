@@ -12,17 +12,17 @@ const StyledSlider = styled(Slider)({
   padding: 0,
   "& .NetflixSlider-track": {
     border: "none",
-    backgroundColor: "skyblue",
+    backgroundColor: "#0071eb",
   },
   "& .NetflixSlider-rail": {
     border: "none",
-    backgroundcolor: "black",
+    backgroundColor: "#ccc",
     opacity: 0.85,
   },
   "& .NetflixSlider-thumb": {
     height: 10,
     width: 10,
-    backgroundColor: "skyblue",
+    backgroundColor: "#0071eb",
     "&:focus, &:hover, &.Netflix-active, &.Netflix-focusVisible": {
       boxShadow: "inherit",
       height: 15,

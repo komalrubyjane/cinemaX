@@ -58,7 +58,7 @@ export function Component() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://assets.nflxext.com/ffe/siteui/vlv3/fc164b4b-f085-44ee-bb7f-ec7df8539571/d3b4e127-4bf6-4c5f-a5ba-fe27fcbeb2fb/IN-en-20240226-popsignuptwoithreads-perspective_alpha_website_small.jpg')`,
+        background: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.6)), url('https://assets.nflxext.com/ffe/siteui/vlv3/fc164b4b-f085-44ee-bb7f-ec7df8539571/d3b4e127-4bf6-4c5f-a5ba-fe27fcbeb2fb/IN-en-20240226-popsignuptwoithreads-perspective_alpha_website_small.jpg')`,
         backgroundSize: "cover",
         position: "relative"
       }}
@@ -80,10 +80,11 @@ export function Component() {
         sx={{
           width: "100%",
           maxWidth: 450,
-          backgroundColor: "rgba(0,0,0,0.75)",
+          backgroundColor: "#fff",
           p: 6,
           borderRadius: 2,
-          color: "black"
+          color: "#333",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)"
         }}
       >
         <Typography variant="h4" mb={4} fontWeight="bold">
@@ -99,10 +100,10 @@ export function Component() {
             onChange={(e) => setUsername(e.target.value)}
             sx={{
               mb: 2,
-              backgroundColor: "#333",
+              backgroundColor: "#f5f5f5",
               borderRadius: 1,
-              input: { color: "black" },
-              "& .MuiFilledInput-root": { backgroundColor: "#333" }
+              input: { color: "#333" },
+              "& .MuiFilledInput-root": { backgroundColor: "#f5f5f5" }
             }}
           />
           <TextField
@@ -114,10 +115,10 @@ export function Component() {
             onChange={(e) => setPassword(e.target.value)}
             sx={{
               mb: 4,
-              backgroundColor: "#333",
+              backgroundColor: "#f5f5f5",
               borderRadius: 1,
-              input: { color: "black" },
-              "& .MuiFilledInput-root": { backgroundColor: "#333" }
+              input: { color: "#333" },
+              "& .MuiFilledInput-root": { backgroundColor: "#f5f5f5" }
             }}
           />
 
@@ -135,10 +136,11 @@ export function Component() {
             sx={{
               p: 1.5,
               mb: 2,
-              backgroundColor: "#87CEEB",
-              "&:hover": { backgroundColor: "#0284c7" },
+              backgroundColor: "#0071eb",
+              "&:hover": { backgroundColor: "#005bb5" },
               fontWeight: 700,
-              fontSize: "1rem"
+              fontSize: "1rem",
+              color: 'white'
             }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : "Sign In"}
@@ -148,7 +150,7 @@ export function Component() {
             fullWidth
             variant="outlined"
             onClick={fillDemo}
-            sx={{ color: "black", borderColor: "rgba(0,0,0,0.4)", mb: 4, "&:hover": { bordercolor: "black" } }}
+            sx={{ color: "#0071eb", borderColor: "rgba(0,113,235,0.4)", mb: 4, "&:hover": { borderColor: "#0071eb", color: "#0071eb" } }}
           >
             Use Demo Account (admin / 1234)
           </Button>
@@ -157,7 +159,7 @@ export function Component() {
         <Typography variant="body2" color="gray" sx={{ mt: 2 }}>
           New to CINEMAX?{" "}
           <span
-            style={{ color: "black", cursor: "pointer", fontWeight: "bold" }}
+            style={{ color: "#0071eb", cursor: "pointer", fontWeight: "bold" }}
             onClick={() => navigate("/signup")}
           >
             Sign up now.

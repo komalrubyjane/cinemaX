@@ -27,3 +27,5 @@ export const INITIAL_DETAIL_STATE = {
   mediaType: undefined,
   mediaDetail: undefined,
 };
+
+export const YOUTUBE_API_KEY = "AIzaSyCEYxSMmaNZNu7dr9HZUPyM4jcEkOkk1Ok";
