@@ -46,7 +46,7 @@ export default function SearchBox() {
   return (
     <Search
       sx={
-        isFocused ? { border: "1px solid white", backgroundColor: "black" } : {}
+        isFocused ? { border: "1px solid white", backgroundColor: "white" } : {}
       }
     >
       <SearchIconWrapper onClick={handleClickSearchIcon}>

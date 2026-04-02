@@ -62,7 +62,7 @@ function YouTubePlayer({
         position: "relative",
         width: "100vw",
         height: "100vh",
-        bgcolor: "#000",
+        bgcolor: "#000000",
         overflow: "hidden",
         cursor: showControls ? "default" : "none",
       }}
@@ -235,7 +235,7 @@ export function Component() {
         sx={{
           width: "100vw",
           height: "100vh",
-          bgcolor: "#141414",
+          bgcolor: "#000000",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",

@@ -6,7 +6,7 @@ import { formatTime } from "src/utils/common";
 const StyledSlider = styled(Slider)({
   borderRadius: 0,
   "& .NetflixSlider-track": {
-    backgroundColor: "red !important",
+    backgroundColor: "skyblue !important",
     border: 0,
   },
   "& .NetflixSlider-rail": {
@@ -18,7 +18,7 @@ const StyledSlider = styled(Slider)({
     borderRadius: "50%",
     height: 10,
     width: 10,
-    backgroundColor: "red",
+    backgroundColor: "skyblue",
     "&:focus, &:hover, &.Netflix-active, &.Netflix-focusVisible": {
       boxShadow: "inherit",
       height: 15,

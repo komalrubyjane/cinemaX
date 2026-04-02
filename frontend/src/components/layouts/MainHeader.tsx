@@ -157,7 +157,7 @@ const MainHeader = () => {
               <Typography textAlign="center">Join Watch Party</Typography>
             </MenuItem>
             <MenuItem onClick={handleLogout}>
-              <Typography textAlign="center" sx={{ color: "#E50914" }}>Sign Out</Typography>
+              <Typography textAlign="center" sx={{ color: "#87CEEB" }}>Sign Out</Typography>
             </MenuItem>
           </Menu>
         </Box>

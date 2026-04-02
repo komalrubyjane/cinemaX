@@ -24,7 +24,7 @@ export default function VideoItemWithHover({ video }: VideoItemWithHoverProps) {
     ? `${configuration?.images.base_url}w300${video.backdrop_path}`
     : video.poster_path
       ? `${configuration?.images.base_url}w300${video.poster_path}`
-      : `https://via.placeholder.com/300x170/141414/E50914?text=${encodeURIComponent(video.title || "CINEMAX")}`;
+      : `https://via.placeholder.com/300x170/141414/87CEEB?text=${encodeURIComponent(video.title || "CINEMAX")}`;
 
   return (
     <VideoItemWithHoverPure

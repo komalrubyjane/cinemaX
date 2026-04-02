@@ -171,7 +171,7 @@ export function Component() {
           <IconButton onClick={() => navigate("/browse")} sx={{ color: "white" }}>
             <KeyboardBackspaceIcon />
           </IconButton>
-          <GroupIcon sx={{ color: "#E50914" }} />
+          <GroupIcon sx={{ color: "#87CEEB" }} />
           <Typography variant="h6" fontWeight="bold">
             Watch Party
           </Typography>
@@ -188,8 +188,8 @@ export function Component() {
           sx={{
             p: 1.5,
             borderRadius: 2,
-            bgcolor: "rgba(229,9,20,0.08)",
-            border: "1px solid rgba(229,9,20,0.3)",
+            bgcolor: "rgba(135,206,235,0.08)",
+            border: "1px solid rgba(135,206,235,0.3)",
             display: "flex",
             alignItems: "center",
             gap: 1,
@@ -204,7 +204,7 @@ export function Component() {
             startIcon={<ContentCopyIcon />}
             onClick={copyLink}
             variant="contained"
-            sx={{ bgcolor: copied ? "#4caf50" : "#E50914", "&:hover": { bgcolor: copied ? "#388e3c" : "#B81D24" }, minWidth: 100 }}
+            sx={{ bgcolor: copied ? "#4caf50" : "#87CEEB", "&:hover": { bgcolor: copied ? "#388e3c" : "#0284c7" }, minWidth: 100 }}
           >
             {copied ? "Copied!" : "Copy Link"}
           </Button>
@@ -258,9 +258,9 @@ export function Component() {
               <IconButton
                 onClick={togglePlay}
                 sx={{
-                  bgcolor: "#E50914",
+                  bgcolor: "#87CEEB",
                   color: "white",
-                  "&:hover": { bgcolor: "#B81D24" },
+                  "&:hover": { bgcolor: "#0284c7" },
                   width: 44,
                   height: 44,
                 }}
@@ -273,7 +273,7 @@ export function Component() {
                 max={180}
                 value={progress}
                 onChange={(e) => seek(Number(e.target.value))}
-                style={{ flex: 1, accentColor: "#E50914", cursor: "pointer" }}
+                style={{ flex: 1, accentColor: "#87CEEB", cursor: "pointer" }}
               />
               <Typography
                 variant="caption"
@@ -312,7 +312,7 @@ export function Component() {
             <Chip
               label={`👤 ${username}`}
               size="small"
-              sx={{ bgcolor: "rgba(229,9,20,0.2)", color: "white", borderColor: "rgba(229,9,20,0.4)", border: "1px solid" }}
+              sx={{ bgcolor: "rgba(135,206,235,0.2)", color: "white", borderColor: "rgba(135,206,235,0.4)", border: "1px solid" }}
             />
             {participants.filter((p) => p !== username).map((p) => (
               <Chip
@@ -344,7 +344,7 @@ export function Component() {
           sx={{
             p: 2,
             borderBottom: "1px solid rgba(255,255,255,0.08)",
-            background: "linear-gradient(135deg, rgba(229,9,20,0.15), rgba(0,0,0,0))",
+            background: "linear-gradient(135deg, rgba(135,206,235,0.15), rgba(0,0,0,0))",
           }}
         >
           <Typography variant="h6" fontWeight="bold">
@@ -365,7 +365,7 @@ export function Component() {
             gap: 1,
             maxHeight: { xs: 300, lg: "calc(100vh - 320px)" },
             "&::-webkit-scrollbar": { width: 4 },
-            "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(229,9,20,0.4)", borderRadius: 2 },
+            "&::-webkit-scrollbar-thumb": { bgcolor: "rgba(135,206,235,0.4)", borderRadius: 2 },
           }}
         >
           <AnimatePresence>
@@ -395,7 +395,7 @@ export function Component() {
                     sx={{
                       bgcolor:
                         msg.sender === username
-                          ? "rgba(229,9,20,0.15)"
+                          ? "rgba(135,206,235,0.15)"
                           : "rgba(255,255,255,0.05)",
                       p: 1.5,
                       borderRadius: 2,
@@ -406,7 +406,7 @@ export function Component() {
                     <Typography
                       variant="caption"
                       sx={{
-                        color: msg.sender === username ? "#E50914" : "#90caf9",
+                        color: msg.sender === username ? "#87CEEB" : "#90caf9",
                         fontWeight: "bold",
                         display: "block",
                         mb: 0.3,
@@ -443,8 +443,8 @@ export function Component() {
                 color: "white",
                 bgcolor: "rgba(255,255,255,0.05)",
                 "& fieldset": { borderColor: "rgba(255,255,255,0.1)" },
-                "&:hover fieldset": { borderColor: "rgba(229,9,20,0.4)" },
-                "&.Mui-focused fieldset": { borderColor: "#E50914" },
+                "&:hover fieldset": { borderColor: "rgba(135,206,235,0.4)" },
+                "&.Mui-focused fieldset": { borderColor: "#87CEEB" },
               },
             }}
           />
@@ -452,7 +452,7 @@ export function Component() {
             variant="contained"
             onClick={sendChat}
             disabled={!chatInput.trim()}
-            sx={{ bgcolor: "#E50914", "&:hover": { bgcolor: "#B81D24" }, minWidth: 60 }}
+            sx={{ bgcolor: "#87CEEB", "&:hover": { bgcolor: "#0284c7" }, minWidth: 60 }}
           >
             Send
           </Button>

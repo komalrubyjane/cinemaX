@@ -152,7 +152,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   sx={{
                     backgroundColor: "transparent",
                     backgroundImage:
-                      "linear-gradient(180deg,hsla(0,0%,8%,0) 0,hsla(0,0%,8%,.15) 15%,hsla(0,0%,8%,.35) 29%,hsla(0,0%,8%,.58) 44%,#141414 68%,#141414)",
+                      "linear-gradient(180deg,hsla(0,0%,100%,0) 0,hsla(0,0%,100%,.15) 15%,hsla(0,0%,100%,.35) 29%,hsla(0,0%,100%,.58) 44%,#ffffff 68%,#ffffff)",
                     backgroundRepeat: "repeat-x",
                     backgroundPosition: "0px top",
                     backgroundSize: "100% 100%",

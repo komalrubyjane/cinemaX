@@ -30,7 +30,7 @@ class VideoItemWithHoverPure extends PureComponent<VideoItemWithHoverPureType> {
             borderRadius: "4px",
           }}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x170/141414/E50914?text=CINEMAX";
+            (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x170/141414/87CEEB?text=CINEMAX";
           }}
           onPointerEnter={() => {
             // console.log("onPointerEnter");

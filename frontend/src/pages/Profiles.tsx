@@ -40,7 +40,7 @@ export function Component() {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "#141414",
+        bgcolor: "#000000",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",

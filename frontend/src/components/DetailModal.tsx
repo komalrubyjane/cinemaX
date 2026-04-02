@@ -86,7 +86,7 @@ export default function DetailModal() {
               }}
             >
               {trailerKey ? (
-                <Box sx={{ position: "relative", width: "100%", paddingTop: "56.25%", bgcolor: "#000" }}>
+                <Box sx={{ position: "relative", width: "100%", paddingTop: "56.25%", bgcolor: "#000000" }}>
                   <iframe
                     src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${trailerKey}&controls=0&rel=0&playsinline=1&modestbranding=1&showinfo=0`}
                     style={{
@@ -126,7 +126,7 @@ export default function DetailModal() {
                 sx={{
                   backgroundColor: "transparent",
                   backgroundImage:
-                    "linear-gradient(180deg,hsla(0,0%,8%,0) 0,hsla(0,0%,8%,.15) 15%,hsla(0,0%,8%,.35) 29%,hsla(0,0%,8%,.58) 44%,#141414 68%,#141414)",
+                    "linear-gradient(180deg,hsla(0,0%,100%,0) 0,hsla(0,0%,100%,.15) 15%,hsla(0,0%,100%,.35) 29%,hsla(0,0%,100%,.58) 44%,#ffffff 68%,#ffffff)",
                   backgroundRepeat: "repeat-x",
                   backgroundPosition: "0px top",
                   backgroundSize: "100% 100%",
@@ -171,7 +171,7 @@ export default function DetailModal() {
                   {detail.mediaDetail?.title}
                 </MaxLineTypography>
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                  <PlayButton sx={{ color: "black", py: 0 }} movieId={detail.mediaDetail?.id} />
+                  <PlayButton sx={{ color: "white", py: 0 }} movieId={detail.mediaDetail?.id} />
                   <NetflixIconButton
                     onClick={() => {
                       if (!detail.mediaDetail) return;
@@ -195,7 +195,7 @@ export default function DetailModal() {
                   >
                     <AddIcon sx={{ color: (() => {
                       const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
-                      return cur.find((m: any) => m.id === detail.mediaDetail?.id) ? '#E50914' : 'inherit';
+                      return cur.find((m: any) => m.id === detail.mediaDetail?.id) ? '#87CEEB' : 'inherit';
                     })() }} />
                   </NetflixIconButton>
                   <NetflixIconButton>

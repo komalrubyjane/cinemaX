@@ -12,7 +12,7 @@ function MainLoadingScreen() {
         justifyContent: "center",
         alignItems: "center",
         position: "fixed",
-        backgroundColor: "#141414",
+        backgroundColor: "#000000",
         opacity: 0.75,
         zIndex: 2,
       }}

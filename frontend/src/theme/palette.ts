@@ -1,9 +1,9 @@
 import type { PaletteMode } from "@mui/material";
 
 const PRIMARY = {
-  light: "#B8B8B8",
-  main: "#141414",
-  dark: "#0E0A0A",
+  light: "#F4F6F8",
+  main: "#FFFFFF",
+  dark: "#DFE3E8",
 };
 const GREY = {
   100: "#F9FAFB",
@@ -30,9 +30,9 @@ const COMMON = {
 
 const palette = {
   ...COMMON,
-  text: { primary: "#fff", secondary: GREY[500], disabled: GREY[600] },
+  text: { primary: "#000", secondary: GREY[600], disabled: GREY[500] },
   background: { default: PRIMARY.main, paper: PRIMARY.main },
-  mode: "dark" as PaletteMode,
+  mode: "light" as PaletteMode,
 };
 
 export default palette;

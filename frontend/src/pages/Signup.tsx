@@ -63,7 +63,7 @@ export function Component() {
       <Box sx={{ position: "absolute", top: 20, left: 40 }}>
         <Typography
           variant="h4"
-          sx={{ color: "#E50914", fontWeight: 900, letterSpacing: 2, cursor: "pointer" }}
+          sx={{ color: "#87CEEB", fontWeight: 900, letterSpacing: 2, cursor: "pointer" }}
           onClick={() => navigate("/")}
         >
           CINEMAX
@@ -147,8 +147,8 @@ export function Component() {
             sx={{
               p: 1.5,
               mb: 4,
-              backgroundColor: "#E50914",
-              "&:hover": { backgroundColor: "#B81D24" },
+              backgroundColor: "#87CEEB",
+              "&:hover": { backgroundColor: "#0284c7" },
               fontWeight: 700,
               fontSize: "1rem"
             }}

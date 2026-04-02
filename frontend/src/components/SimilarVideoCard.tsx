@@ -61,7 +61,7 @@ export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
         <img
           src={imgSrc}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = `https://via.placeholder.com/780x439/141414/E50914?text=${encodeURIComponent(video.title || "CINEMAX")}`;
+            (e.target as HTMLImageElement).src = `https://via.placeholder.com/780x439/141414/87CEEB?text=${encodeURIComponent(video.title || "CINEMAX")}`;
           }}
           style={{
             top: 0,

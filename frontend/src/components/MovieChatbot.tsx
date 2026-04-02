@@ -75,11 +75,11 @@ export default function MovieChatbot() {
                         }}
                     >
                         {/* Header */}
-                        <Box sx={{ backgroundColor: '#E50914', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'white' }}>
+                        <Box sx={{ backgroundColor: '#87CEEB', px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: "white" }}>
                             <Typography variant="subtitle1" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 🍿 CINEMAX AI
                             </Typography>
-                            <IconButton size="small" sx={{ color: 'white' }} onClick={() => setIsOpen(false)}>
+                            <IconButton size="small" sx={{ color: "white" }} onClick={() => setIsOpen(false)}>
                                 <CloseIcon fontSize="small" />
                             </IconButton>
                         </Box>
@@ -94,7 +94,7 @@ export default function MovieChatbot() {
                                         borderRadius: '16px',
                                         borderTopRightRadius: msg.role === 'user' ? '4px' : '16px',
                                         borderTopLeftRadius: msg.role === 'bot' ? '4px' : '16px',
-                                        backgroundColor: msg.role === 'user' ? '#E50914' : '#2A2A2A',
+                                        backgroundColor: msg.role === 'user' ? '#87CEEB' : '#2A2A2A',
                                         color: msg.role === 'user' ? 'white' : '#E0E0E0',
                                         fontSize: '0.875rem'
                                     }}>
@@ -125,7 +125,7 @@ export default function MovieChatbot() {
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
                                         borderRadius: '24px',
-                                        color: 'white',
+                                        color: "white",
                                         backgroundColor: '#2A2A2A',
                                         '& fieldset': { border: 'none' },
                                     }
@@ -135,9 +135,9 @@ export default function MovieChatbot() {
                                 onClick={handleSend} 
                                 disabled={loading || !input.trim()}
                                 sx={{ 
-                                    backgroundColor: '#E50914', 
-                                    color: 'white', 
-                                    '&:hover': { backgroundColor: '#B81D24' },
+                                    backgroundColor: '#87CEEB', 
+                                    color: "white", 
+                                    '&:hover': { backgroundColor: '#0284c7' },
                                     '&.Mui-disabled': { backgroundColor: '#555', color: '#888' }
                                 }}
                             >
@@ -155,10 +155,10 @@ export default function MovieChatbot() {
                 onClick={() => setIsOpen(!isOpen)}
                 sx={{
                     width: 56, height: 56,
-                    backgroundColor: '#E50914',
-                    color: 'white',
+                    backgroundColor: '#87CEEB',
+                    color: "white",
                     boxShadow: 4,
-                    '&:hover': { backgroundColor: '#B81D24' }
+                    '&:hover': { backgroundColor: '#0284c7' }
                 }}
             >
                 {isOpen ? <CloseIcon /> : <SmartToyIcon />}
