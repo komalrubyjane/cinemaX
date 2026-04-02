@@ -4,6 +4,7 @@ import Stack from "@mui/material/Stack";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import ReactPlayer from "react-player";
+const Player: any = ReactPlayer;
 
 import { getRandomNumber } from "src/utils/common";
 import MaxLineTypography from "./MaxLineTypography";
@@ -113,7 +114,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                       overflow: "hidden",
                     }}
                   >
-                    <ReactPlayer
+                    <Player
                       url={`https://www.youtube.com/watch?v=${videoKey}`}
                       playing
                       muted={muted}
@@ -135,7 +136,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                             showinfo: 0,
                             playsinline: 1,
                           },
-                        },
+                        } as any,
                       }}
                     />
                     {/* Transparent click-blocker so YouTube logo/overlay can't be clicked */}
