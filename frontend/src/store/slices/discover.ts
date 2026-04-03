@@ -330,7 +330,7 @@ const extendedApi = tmdbApi.injectEndpoints({
             console.error('getAppendedVideos: RTK Query error:', result.error);
             // Return mock movie with videos when API fails
             return { 
-              data: MOCK_MOVIES[0] as any
+              data: MOCK_MOVIES[0] as any as MovieDetail
             };
           }
           
@@ -341,12 +341,11 @@ const extendedApi = tmdbApi.injectEndpoints({
           console.log('getAppendedVideos: Has videos?:', !!data?.videos);
           console.log('getAppendedVideos: Videos results length:', data?.videos?.results?.length || 0);
           
-          return { data };
+          return { data: data as MovieDetail };
         } catch (err: any) {
           console.error('getAppendedVideos: queryFn error:', err);
-          // Return mock movie with videos as fallback
           return { 
-            data: MOCK_MOVIES[0] as any
+            data: MOCK_MOVIES[0] as any as MovieDetail
           };
         }
       },
@@ -366,14 +365,14 @@ const extendedApi = tmdbApi.injectEndpoints({
           return {
             data: {
               page: 1,
-              results: MOCK_MOVIES.slice(1),
+              results: MOCK_MOVIES.slice(1) as any,
               total_pages: 1,
               total_results: MOCK_MOVIES.length - 1,
-            }
+            } as PaginatedMovieResult
           };
         }
         
-        return { data: result.data };
+        return { data: result.data as PaginatedMovieResult };
       }
     }),
   }),
