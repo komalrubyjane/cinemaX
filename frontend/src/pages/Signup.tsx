@@ -55,15 +55,22 @@ export function Component() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: `radial-gradient(circle at bottom right, hsla(210,100%,98%,1) 0%, hsla(220,100%,95%,1) 100%)`,
+        background: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.92)), url('https://assets.nflxext.com/ffe/siteui/vlv3/fc164b4b-f085-44ee-bb7f-ec7df8539571/d3b4e127-4bf6-4c5f-a5ba-fe27fcbeb2fb/IN-en-20240226-popsignuptwoithreads-perspective_alpha_website_small.jpg')`,
+        backgroundSize: "cover",
         position: "relative",
         fontFamily: "'Inter', sans-serif"
       }}
     >
-      <Box sx={{ position: "absolute", top: 30, left: 50 }}>
+      <Box sx={{ position: "absolute", top: 40, left: { xs: 20, md: 60 } }}>
         <Typography
           variant="h4"
-          sx={{ color: "#004de6", fontWeight: 900, letterSpacing: -1, cursor: "pointer" }}
+          sx={{ 
+            color: "#0071eb", 
+            fontWeight: 900, 
+            letterSpacing: -1, 
+            cursor: "pointer",
+            fontFamily: "'Outfit', sans-serif"
+          }}
           onClick={() => navigate("/")}
         >
           CINEMAX
@@ -92,6 +99,8 @@ export function Component() {
 
         <form onSubmit={handleSignup}>
           <TextField
+            id="signup-username"
+            name="username"
             fullWidth
             placeholder="Username"
             variant="filled"
@@ -106,6 +115,8 @@ export function Component() {
             }}
           />
           <TextField
+            id="signup-password"
+            name="password"
             fullWidth
             type="password"
             placeholder="Password"
@@ -121,6 +132,8 @@ export function Component() {
             }}
           />
           <TextField
+            id="confirm-password"
+            name="confirmPassword"
             fullWidth
             type="password"
             placeholder="Confirm Password"
@@ -150,8 +163,8 @@ export function Component() {
             sx={{
               p: 1.5,
               mb: 4,
-              backgroundColor: "#004de6",
-              "&:hover": { backgroundColor: "#003db3" },
+              backgroundColor: "#00a2ff",
+              "&:hover": { backgroundColor: "#008ae6" },
               fontWeight: 700,
               fontSize: "1.1rem",
               color: 'white',
@@ -166,7 +179,7 @@ export function Component() {
         <Typography variant="body2" color="gray" sx={{ mt: 2 }}>
           Already have an account?{" "}
           <span
-            style={{ color: "#004de6", cursor: "pointer", fontWeight: "bold" }}
+            style={{ color: "#00a2ff", cursor: "pointer", fontWeight: "bold" }}
             onClick={() => navigate("/login")}
           >
             Sign in now.

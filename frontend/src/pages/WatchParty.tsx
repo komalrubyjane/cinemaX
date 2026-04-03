@@ -285,7 +285,14 @@ export function Component() {
               onProgress={(p: any) => setProgress(p.playedSeconds)}
               config={{
                 youtube: {
-                  playerVars: { controls: 0, modestbranding: 1, rel: 0, showinfo: 0 }
+                  playerVars: { 
+                    controls: 0, 
+                    modestbranding: 1, 
+                    rel: 0, 
+                    showinfo: 0, 
+                    origin: window.location.origin,
+                    enablejsapi: 1
+                  }
                 }
               }}
             />

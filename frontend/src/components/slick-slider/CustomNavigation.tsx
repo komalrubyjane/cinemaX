@@ -15,13 +15,12 @@ const ArrowStyle = styled(Box)(({ theme }) => ({
   cursor: "pointer",
   alignItems: "center",
   justifyContent: "center",
-  color: theme.palette.text.primary,
-  border: `1px solid ${theme.palette.divider}`,
-  backgroundColor: "rgba(0,0,0,0.05)",
-  transition: theme.transitions.create("all"),
+  color: theme.palette.common.white,
+  // background: theme.palette.grey[700],
+  transition: theme.transitions.create("opacity"),
   "&:hover": {
-    opacity: 0.9,
-    background: theme.palette.grey[200],
+    opacity: 0.8,
+    background: theme.palette.grey[900],
   },
   [theme.breakpoints.down("sm")]: {
     display: "none",

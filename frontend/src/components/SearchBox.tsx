@@ -56,6 +56,8 @@ export default function SearchBox() {
         inputRef={searchInputRef}
         placeholder="Titles, people, genres"
         inputProps={{
+          id: "search-box",
+          name: "search",
           "aria-label": "search",
           onFocus: () => setIsFocused(true),
           onBlur: () => setIsFocused(false),

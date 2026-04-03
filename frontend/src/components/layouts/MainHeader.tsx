@@ -57,25 +57,30 @@ const MainHeader = () => {
   return (
     <AppBar
       sx={{
-        px: "60px",
+        px: { xs: "20px", md: "60px" },
         height: APP_BAR_HEIGHT,
         backgroundImage: "none",
+        transition: "all 0.3s ease",
         ...(isOffset
           ? {
-              bgcolor: "primary.main",
-              boxShadow: (theme) => theme.shadows[4],
+              bgcolor: "rgba(255, 255, 255, 0.8)",
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
             }
-          : { boxShadow: 0, bgcolor: "transparent" }),
+          : { 
+              boxShadow: 0, 
+              bgcolor: "transparent",
+            }),
       }}
     >
-      <Toolbar disableGutters>
+      <Toolbar disableGutters sx={{ height: "100%" }}>
         <Logo sx={{ mr: { xs: 2, sm: 4 } }} />
 
         <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
           <IconButton
             size="large"
             onClick={handleOpenNavMenu}
-            color="inherit"
+            sx={{ color: "black" }}
           >
             <MenuIcon />
           </IconButton>
@@ -122,9 +127,9 @@ const MainHeader = () => {
             <IconButton
               onClick={handleJoinParty}
               sx={{
-                color: "black",
-                bgcolor: "rgba(229, 9, 20, 0.2)",
-                "&:hover": { bgcolor: "rgba(229, 9, 20, 0.5)" },
+                color: "#87CEEB",
+                bgcolor: "rgba(135, 206, 235, 0.1)",
+                "&:hover": { bgcolor: "rgba(135, 206, 235, 0.2)" },
                 display: { xs: "none", md: "flex" },
               }}
             >
@@ -157,7 +162,7 @@ const MainHeader = () => {
               <Typography textAlign="center">Join Watch Party</Typography>
             </MenuItem>
             <MenuItem onClick={handleLogout}>
-              <Typography textAlign="center" sx={{ color: "#87CEEB" }}>Sign Out</Typography>
+              <Typography textAlign="center" sx={{ color: "#87CEEB", fontWeight: 700 }}>Sign Out</Typography>
             </MenuItem>
           </Menu>
         </Box>

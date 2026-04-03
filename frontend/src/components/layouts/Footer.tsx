@@ -22,16 +22,8 @@ export default function Footer() {
           "::before, ::after": { top: "0%" },
         }}
       >
-        <Typography color="grey.700" variant="h6" component="span">
-          Developed by{" "}
-          <Link
-            target="_blank"
-            underline="none"
-            sx={{ color: "text.primary" }}
-            href="https://github.com/crazy-man22"
-          >
-            Crazy Man
-          </Link>
+        <Typography color="grey.600" variant="body2" component="span">
+          © 2024 CINEMAX. All rights reserved.
         </Typography>
       </Divider>
     </Box>

@@ -1,7 +1,7 @@
 .hero {
   height: 100vh; 
    background-image: 
-    linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 100%),
+    linear-gradient(to top, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.4) 100%),
     url('https://cdn.mos.cms.futurecdn.net/rDJegQJaCyGaYysj2g5XWY.jpg');
   background-size: cover;
   background-position: center;
@@ -10,11 +10,11 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #111;
 }
 
-.hero .overlay {
-  background: rgba(0, 0, 0, 0.45); 
+.overlay {
+  background: rgba(255, 255, 255, 0.05); 
   width: 100%;
   height: 100%;
   display: flex;
@@ -23,9 +23,9 @@
 }
 
 .header-container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 1.5rem 2rem;
+  padding: 1.25rem 3.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -95,12 +95,20 @@ form.email-form {
 .sign-in-btn {
   color: white;
   text-decoration: none;
-  font-family: 'Inter', Arial, sans-serif;
-  background-color: #004de6;
-  padding: 8px 16px;
+  font-family: 'Inter', sans-serif;
+  background-color: #00a2ff;
+  padding: 8px 22px;
   border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 162, 255, 0.15);
+}
+
+.sign-in-btn:hover {
+  background-color: #008ae6;
+  box-shadow: 0 4px 8px rgba(0, 162, 255, 0.3);
+  transform: translateY(-1px);
 }
 
 .email-form input {
@@ -123,28 +131,29 @@ form.email-form {
 }
 
 .email-form button {
-  padding: 0 20px;
-  height: 52px;
+  padding: 0 30px;
+  height: 62px;
   box-sizing: border-box;
-  width: 200px;
-  font-family: 'Inter', Arial, sans-serif;
-  background-color: #004de6;
+  min-width: 220px;
+  font-family: 'Inter', sans-serif;
+  background-color: #00a2ff;
   color: white;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
+  font-weight: 850;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .email-form button:hover {
-  background-color: #003db3;
-  transform: translateY(-2px);
+  background-color: #008ae6;
+  transform: scale(1.03) translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 162, 255, 0.4);
 }
-
 
 .border-divider {
   width: 100%;
@@ -153,7 +162,7 @@ form.email-form {
 }
 
 .trending {
-  background-color: #f8f9fa;
+  background-color: white;
   color: #141414;
   padding: 20px 40px;
   font-family: 'Inter', Arial, sans-serif;
@@ -213,14 +222,14 @@ form.email-form {
 
 .rank-number {
   position: absolute;
-  bottom: -13px;
-  left: -1px;
-  font-size: 5rem;
-  font-weight: 800;
+  bottom: 0px;
+  left: 0;
+  font-size: 6rem;
+  font-weight: 950;
   color: white;
-  -webkit-text-stroke: 1.5px #004de6;
-  text-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
-  font-family: 'Arial Black', sans-serif;
+  -webkit-text-stroke: 2.5px #00a2ff;
+  text-shadow: 0 0 12px rgba(0, 162, 255, 0.2);
+  font-family: 'Outfit', sans-serif;
   z-index: 2;
   pointer-events: none;
 }
@@ -270,9 +279,9 @@ form.email-form {
 }
 
 .reasons {
-  background-color: #f8f9fa; 
-  padding: 80px 40px;
-  margin-top: -60px;
+  background-color: white; 
+  padding: 60px 40px;
+  margin-top: -50px;
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -298,18 +307,17 @@ form.email-form {
 
 .reason-card {
   position: relative; 
-  background-color: #ffffff;
-  padding: 24px;
-  border-radius: 12px;
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 10px;
   width: 280px;
   min-height: 260px;
   box-sizing: border-box;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s ease;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  border: 1px solid #e1e4e8;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  gap: 8px;
+  border: 1px solid #ddd;
 }
 
 .corner-icon {
@@ -347,10 +355,10 @@ form.email-form {
 }
 
 .faq-section {
-  background-color: #f8f9fa;
+  background-color: white;
   color: #141414;
-  padding: 50px 0;
-  font-family: 'Inter', Helvetica, Arial, sans-serif;
+  padding: 30px 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .faq-container {
@@ -368,13 +376,11 @@ form.email-form {
 }
 
 .faq-item {
-  background-color: #ffffff;
-  margin-bottom: 12px;
-  border: 1px solid #e1e4e8;
-  border-radius: 8px;
+  background-color: #f8f8f8;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #ffffff;
+  border: 1px solid #eee;
   width: 100%;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 .faq-answer {
   display: none;

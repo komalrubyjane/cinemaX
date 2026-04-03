@@ -26,15 +26,24 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/cinematch'
 const startDB = async () => {
     try {
         await mongoose.connect(MONGO_URI);
-        console.log('Connected to MongoDB');
+        console.log('✅ Connected to MongoDB');
+        return true;
     } catch (err) {
-        // On Vercel / serverless, mongodb-memory-server cannot download binaries.
-        // Log the error but let the app start — routes will return 503 if DB is needed.
-        console.warn(`[DB] MongoDB connection failed: ${err.message}`);
-        console.warn('[DB] Running without database — auth is handled by Python service on Vercel.');
+        console.warn(`⚠️ [DB] Local MongoDB connection failed: ${err.message}`);
+        try {
+            const { MongoMemoryServer } = require('mongodb-memory-server');
+            const mongoServer = await MongoMemoryServer.create();
+            const uri = mongoServer.getUri();
+            await mongoose.connect(uri);
+            console.log(`✅ [DB] Running on in-memory MongoDB: ${uri}`);
+            return true;
+        } catch (memErr) {
+            console.warn(`⚠️ [DB] Memory server failed: ${memErr.message}`);
+            console.warn('⚠️ [DB] Running without database — use admin/1234 to login.');
+            return false;
+        }
     }
 };
-startDB();
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -59,12 +68,17 @@ io.on('connection', (socket) => {
     });
 });
 
-// Only bind a port when running locally (not on Vercel serverless)
+// Start server immediately
 if (!process.env.VERCEL) {
     server.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+        console.log(`🚀 Server running on port ${PORT}`);
     });
 }
+
+// Initialize database in the background
+startDB().catch((err) => {
+    console.error('❌ Database initialization error:', err.message);
+});
 
 // Export app for completely standalone Vercel Serverless deployment
 module.exports = app;

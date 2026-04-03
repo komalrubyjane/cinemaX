@@ -41,19 +41,20 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
     return getRandomNumber(20);
   }, []);
 
+  const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
     if (data && data.results) {
       const videos = data.results.filter((item) => !!item.backdrop_path);
       setVideo(videos[getRandomNumber(videos.length)]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
   useEffect(() => {
     if (video) {
       getVideoDetail({ mediaType, id: video.id });
+      setIsReady(false); // Reset on new video
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [video]);
 
   useEffect(() => {
@@ -64,12 +65,28 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
         ) ||
         detail.videos.results.find((v: any) => v.site === "YouTube") ||
         detail.videos.results[0];
-      if (trailer?.key) setVideoKey(trailer.key);
+
+      if (trailer?.key) {
+        setVideoKey(trailer.key);
+      } else {
+        console.warn("Hero: No trailer found, forcing universal test video");
+        setVideoKey("dQw4w9WgXcQ");
+      }
     }
   }, [detail]);
 
   const handleMute = useCallback((status: boolean) => {
-    setMuted(!status);
+    const newMuted = !status;
+    const cmd = newMuted ? 'mute' : 'unMute';
+    // Use an ID or ref to match the iframe - for now targeting global iframes in Hero
+    const iframes = document.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+      // Very crude check for YT origin or title if possible
+      if (iframe.src.includes('youtube.com/embed')) {
+        iframe.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: cmd, args: [] }), '*');
+      }
+    });
+    setMuted(newMuted);
   }, []);
 
   return (
@@ -102,43 +119,49 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   position: "absolute",
                 }}
               >
+                {/* Fallback backdrop image when no video key or player not ready or scrolled past */}
+                {(!videoKey || isOffset || !isReady) && video?.backdrop_path && (
+                  <Box
+                    component="img"
+                    src={`https://image.tmdb.org/t/p/w1280${video.backdrop_path}`}
+                    alt={video.title}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      zIndex: 1, // Keep behind shadow but in front of player until ready
+                    }}
+                  />
+                )}
+
                 {/* ReactPlayer — hidden when user scrolls past hero */}
                 {videoKey && !isOffset && (
                   <Box
                     sx={{
                       position: "absolute",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
+                      top: "-8%", // Crop top to hide titles
+                      left: "-8%", // Crop side
+                      width: "116%", // Zoom to fit
+                      height: "116%", // Zoom to fit
                       overflow: "hidden",
                     }}
                   >
-                    <Player
-                      url={`https://www.youtube.com/watch?v=${videoKey}`}
-                      playing={true}
-                      muted={muted}
-                      loop={true}
-                      controls={false}
+                    <iframe
                       width="100%"
-                      height="115%"
-                      style={{ pointerEvents: "none", transform: 'scale(1.2)' }}
-                      config={{
-                        youtube: {
-                          playerVars: {
-                            autoplay: 1,
-                            controls: 0,
-                            disablekb: 1,
-                            fs: 0,
-                            iv_load_policy: 3,
-                            modestbranding: 1,
-                            rel: 0,
-                            showinfo: 0,
-                            playsinline: 1,
-                            mute: 1
-                          },
-                        } as any,
+                      height="100%"
+                      src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&enablejsapi=1&origin=${window.location.origin}&mute=${muted ? 1 : 0}&loop=1&playlist=${videoKey}`}
+                      title={video.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      onLoad={() => {
+                        console.log("Hero IFrame loaded");
+                        setIsReady(true);
                       }}
+                      style={{ width: '100%', height: '100%' }}
                     />
                     {/* Transparent click-blocker so YouTube logo/overlay can't be clicked */}
                     <Box
@@ -148,81 +171,69 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        zIndex: 1,
+                        zIndex: 2,
+                        pointerEvents: "none",
                       }}
                     />
                   </Box>
                 )}
 
-                {/* Fallback backdrop image when no video key */}
-                {(!videoKey || isOffset) && video?.backdrop_path && (
-                  <Box
-                    component="img"
-                    src={`https://image.tmdb.org/t/p/original${video.backdrop_path}`}
-                    alt={video.title}
-                    sx={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                    }}
-                  />
-                )}
-
-                {/* Left shadow gradient */}
+                {/* Left shadow gradient - REMOVED for clean look */}
                 <Box
                   sx={{
-                    background: `linear-gradient(77deg,rgba(0,0,0,.6),transparent 85%)`,
+                    background: "transparent",
                     top: 0,
                     left: 0,
                     bottom: 0,
                     right: "26.09%",
-                    opacity: 1,
                     position: "absolute",
-                    transition: "opacity .5s",
                     zIndex: 2,
                   }}
                 />
 
-                {/* Bottom fade gradient */}
+                {/* Bottom fade gradient - REMOVED for clean look */}
                 <Box
                   sx={{
-                    backgroundColor: "transparent",
-                    backgroundImage:
-                      "linear-gradient(180deg,hsla(0,0%,97.3%,0) 0,hsla(0,0%,97.3%,.15) 15%,hsla(0,0%,97.3%,.35) 29%,hsla(0,0%,97.3%,.58) 44%,#f8f9fa 68%,#f8f9fa)",
-                    backgroundRepeat: "repeat-x",
-                    backgroundPosition: "0px top",
-                    backgroundSize: "100% 100%",
+                    background: "transparent",
                     bottom: 0,
                     position: "absolute",
-                    height: "14.7vw",
+                    height: "0px", 
                     opacity: 1,
-                    top: "auto",
                     width: "100%",
                     zIndex: 2,
                   }}
                 />
 
-                {/* Mute / Maturity controls */}
+                {/* Mute / Next / Maturity controls */}
                 <Stack
                   direction="row"
-                  spacing={2}
+                  spacing={1.5}
                   sx={{
                     alignItems: "center",
                     position: "absolute",
-                    right: 0,
+                    right: { xs: 20, md: 60 },
                     bottom: "35%",
-                    zIndex: 3,
+                    zIndex: 15, // Ensure above everything
                   }}
                 >
                   <NetflixIconButton
                     size="large"
-                    onClick={() => handleMute(muted)}
-                    sx={{ zIndex: 3 }}
+                    onClick={() => {
+                      if (data?.results) {
+                        setVideo(data.results[getRandomNumber(data.results.length)]);
+                      }
+                    }}
+                    sx={{ bgcolor: "rgba(255,255,255,0.1)", backdropFilter: "blur(4px)", border: '1px solid rgba(0,0,0,0.1)' }}
+                    title="Next Trailer"
                   >
-                    {!muted ? <VolumeUpIcon /> : <VolumeOffIcon />}
+                    <span style={{ fontSize: '1.2rem', color: '#000', fontWeight: 'bold' }}>Next</span>
+                  </NetflixIconButton>
+
+                  <NetflixIconButton
+                    size="large"
+                    onClick={() => handleMute(muted)}
+                  >
+                    {!muted ? <VolumeUpIcon sx={{ color: '#000' }} /> : <VolumeOffIcon sx={{ color: '#000' }} />}
                   </NetflixIconButton>
                   <MaturityRate>{`${maturityRate}+`}</MaturityRate>
                 </Stack>
@@ -238,7 +249,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   bottom: 0,
                   width: "100%",
                   height: "100%",
-                  zIndex: 3,
+                  zIndex: 10,
                   pointerEvents: "none",
                 }}
               >
@@ -258,14 +269,16 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   <MaxLineTypography
                     variant="h2"
                     maxLine={1}
-                    color="text.primary"
+                    color="#141414"
+                    sx={{ fontWeight: 950, fontFamily: "'Outfit', sans-serif" }}
                   >
                     {video.title}
                   </MaxLineTypography>
                   <MaxLineTypography
                     variant="h5"
                     maxLine={3}
-                    color="text.primary"
+                    color="#333"
+                    sx={{ fontWeight: 500 }}
                   >
                     {video.overview}
                   </MaxLineTypography>

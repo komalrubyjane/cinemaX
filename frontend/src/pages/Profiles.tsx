@@ -21,8 +21,11 @@ export function Component() {
   }, []);
 
   const selectProfile = (p: any) => {
+    console.log('selectProfile clicked:', p.name);
     localStorage.setItem("activeProfile", JSON.stringify(p));
+    console.log('About to navigate to /browse');
     navigate("/browse");
+    console.log('Navigate called');
   };
 
   const handleManage = () => {
@@ -40,50 +43,57 @@ export function Component() {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "#f4f6f8",
+        bgcolor: "#ffffff",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         p: { xs: 2, md: 4 },
+        fontFamily: "'Inter', sans-serif"
       }}
     >
-      <Typography variant="h3" sx={{ color: "#1c1c1c", mb: 8, fontWeight: "bold" }}>
+      <Typography variant="h3" sx={{ color: "#141414", mb: 8, fontWeight: 900, fontFamily: "'Outfit', sans-serif" }}>
         Who's watching?
       </Typography>
 
       <Box sx={{ display: "flex", flexWrap: "wrap", gap: { xs: 4, md: 6 }, justifyContent: "center" }}>
         {profiles.map((p, idx) => (
           <Box
-            component={motion.div}
             key={p._id || idx}
-            whileHover={{ scale: 1.1 }}
-            onClick={() => selectProfile(p)}
+            onClick={() => {
+              console.log('Profile box clicked:', p._id);
+              selectProfile(p);
+            }}
             sx={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               cursor: "pointer",
+              transition: "transform 0.2s ease",
+              "&:hover": {
+                transform: "scale(1.08)",
+              },
               "&:hover .profile-img": {
-                borderColor: "#004de6",
+                borderColor: "#00a2ff",
+                boxShadow: "0 0 24px rgba(0,162,255,0.25)"
               },
               "&:hover .profile-name": {
-                color: "#1c1c1c",
+                color: "#00a2ff",
               },
             }}
           >
             <Box
               className="profile-img"
               sx={{
-                width: { xs: 100, md: 150 },
-                height: { xs: 100, md: 150 },
+                width: { xs: 120, md: 160 },
+                height: { xs: 120, md: 160 },
                 borderRadius: 2,
-                bgcolor: "background.paper",
+                bgcolor: "#f5f5f5",
                 backgroundImage: p.type === "Kids" ? "url('/assets/kids-avatar.png')" : "url('/avatar.png')",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 border: "4px solid transparent",
-                transition: "border-color 0.3s ease",
+                transition: "all 0.3s ease",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -97,8 +107,9 @@ export function Component() {
               className="profile-name"
               sx={{
                 mt: 2,
-                color: "grey.600",
-                fontSize: { xs: "1.2rem", md: "1.5rem" },
+                color: "#666",
+                fontWeight: 600,
+                fontSize: { xs: "1.1rem", md: "1.3rem" },
                 transition: "color 0.3s ease",
               }}
             >
@@ -112,17 +123,18 @@ export function Component() {
         variant="outlined"
         onClick={handleManage}
         sx={{
-          mt: 8,
-          color: "grey.700",
-          borderColor: "grey.400",
+          mt: 10,
+          color: "#666",
+          borderColor: "#ddd",
           letterSpacing: 2,
-          px: 4,
+          px: 5,
           py: 1.5,
-          fontSize: "1.2rem",
+          fontWeight: 600,
+          fontSize: "1rem",
           "&:hover": {
-            color: "#1c1c1c",
-            borderColor: "#1c1c1c",
-            bgcolor: "rgba(0,0,0,0.05)",
+            color: "#00a2ff",
+            borderColor: "#00a2ff",
+            bgcolor: "rgba(0,162,255,0.05)",
           },
         }}
       >

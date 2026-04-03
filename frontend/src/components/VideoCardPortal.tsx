@@ -65,10 +65,11 @@ export default function VideoCardModal({
     }
   };
 
+  const baseUrl = configuration?.images?.base_url || "https://image.tmdb.org/t/p/";
   const imgSrc = video.backdrop_path
-    ? `${configuration?.images.base_url}w780${video.backdrop_path}`
+    ? `${baseUrl}w780${video.backdrop_path}`
     : video.poster_path
-      ? `${configuration?.images.base_url}w780${video.poster_path}`
+      ? `${baseUrl}w780${video.poster_path}`
       : `https://image.tmdb.org/t/p/w780${video.backdrop_path || video.poster_path || ''}`;
 
   return (
@@ -91,7 +92,7 @@ export default function VideoCardModal({
         <img
           src={imgSrc}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = `https://via.placeholder.com/780x439/f5f5f5/004de6?text=${encodeURIComponent(video.title || "CINEMAX")}`;
+            (e.target as HTMLImageElement).src = `https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=500&auto=format&fit=crop`;
           }}
           style={{
             top: 0,

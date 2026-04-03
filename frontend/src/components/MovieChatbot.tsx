@@ -115,6 +115,8 @@ export default function MovieChatbot() {
                         {/* Input Area */}
                         <Box sx={{ p: 1.5, borderTop: '1px solid #333', backgroundColor: '#121212', display: 'flex', gap: 1 }}>
                             <TextField
+                                id="movie-chatbot-input"
+                                name="chatbotMessage"
                                 fullWidth
                                 variant="outlined"
                                 size="small"

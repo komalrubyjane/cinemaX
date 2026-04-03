@@ -34,9 +34,6 @@ export function Component() {
         localStorage.setItem("token", data.token || "local-session");
         localStorage.setItem("userId", String(data.userId || "1"));
         localStorage.setItem("username", username);
-        if (data.profiles) {
-          localStorage.setItem("profiles", JSON.stringify(data.profiles));
-        }
         navigate("/profiles");
       } else {
         setError(data.detail || "Invalid credentials.");
@@ -61,15 +58,22 @@ export function Component() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: `radial-gradient(circle at top left, hsla(210,100%,98%,1) 0%, hsla(220,100%,95%,1) 100%)`,
+        background: `linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.92)), url('https://assets.nflxext.com/ffe/siteui/vlv3/fc164b4b-f085-44ee-bb7f-ec7df8539571/d3b4e127-4bf6-4c5f-a5ba-fe27fcbeb2fb/IN-en-20240226-popsignuptwoithreads-perspective_alpha_website_small.jpg')`,
+        backgroundSize: "cover",
         position: "relative",
         fontFamily: "'Inter', sans-serif"
       }}
     >
-      <Box sx={{ position: "absolute", top: 30, left: 50 }}>
+      <Box sx={{ position: "absolute", top: 40, left: { xs: 20, md: 60 } }}>
         <Typography
           variant="h4"
-          sx={{ color: "#004de6", fontWeight: 900, letterSpacing: -1, cursor: "pointer" }}
+          sx={{ 
+            color: "#0071eb", 
+            fontWeight: 900, 
+            letterSpacing: -1, 
+            cursor: "pointer",
+            fontFamily: "'Outfit', sans-serif"
+          }}
           onClick={() => navigate("/")}
         >
           CINEMAX
@@ -78,18 +82,16 @@ export function Component() {
 
       <Box
         component={motion.div}
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
         sx={{
           width: "100%",
-          maxWidth: 460,
-          backgroundColor: "#ffffff",
-          p: 8,
-          borderRadius: 4,
-          color: "#111827",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.08)",
-          border: '1px solid #f3f4f6'
+          maxWidth: 450,
+          backgroundColor: "#fff",
+          p: 6,
+          borderRadius: 2,
+          color: "#333",
+          boxShadow: "0 10px 25px rgba(0,0,0,0.1)"
         }}
       >
         <Typography variant="h4" mb={4} fontWeight="bold">
@@ -141,13 +143,11 @@ export function Component() {
             sx={{
               p: 1.5,
               mb: 2,
-              backgroundColor: "#004de6",
-              "&:hover": { backgroundColor: "#003db3" },
+              backgroundColor: "#00a2ff",
+              "&:hover": { backgroundColor: "#008ae6" },
               fontWeight: 700,
-              fontSize: "1.1rem",
-              color: 'white',
-              borderRadius: '8px',
-              textTransform: 'none'
+              fontSize: "1rem",
+              color: 'white'
             }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : "Sign In"}
@@ -157,7 +157,7 @@ export function Component() {
             fullWidth
             variant="outlined"
             onClick={fillDemo}
-            sx={{ color: "#004de6", borderColor: "rgba(0,77,230,0.3)", mb: 4, borderRadius: '8px', textTransform: 'none', "&:hover": { borderColor: "#004de6", color: "#004de6", bgcolor: 'rgba(0,77,230,0.02)' } }}
+            sx={{ color: "#00a2ff", borderColor: "rgba(0,162,255,0.4)", mb: 4, "&:hover": { borderColor: "#00a2ff", color: "#00a2ff" } }}
           >
             Use Demo Account (admin / 1234)
           </Button>
@@ -166,7 +166,7 @@ export function Component() {
         <Typography variant="body2" color="gray" sx={{ mt: 2 }}>
           New to CINEMAX?{" "}
           <span
-            style={{ color: "#004de6", cursor: "pointer", fontWeight: "bold" }}
+            style={{ color: "#00a2ff", cursor: "pointer", fontWeight: "bold" }}
             onClick={() => navigate("/signup")}
           >
             Sign up now.

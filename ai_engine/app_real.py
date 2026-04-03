@@ -825,7 +825,12 @@ def recommend(
     mood_genres = mood_filters.get(mood.lower(), [])
     
     # Fetch watch history
-    history_records = db.table("watch_history").select("movie_id").eq("user_id", user_id).execute().data
+    try:
+        history_records = db.table("watch_history").select("movie_id").eq("user_id", numeric_user_id).execute().data
+    except Exception as e:
+        print(f"Error fetching history for {numeric_user_id}: {e}")
+        history_records = []
+
     watched_movie_ids = {h["movie_id"] for h in history_records}
     watched_genres = {}
     for mid in watched_movie_ids:
@@ -836,7 +841,10 @@ def recommend(
 
     total_watched = sum(watched_genres.values()) or 1
     
-    prefs = db.table("user_preference").select("*").eq("user_id", user_id).execute().data
+    try:
+        prefs = db.table("user_preference").select("*").eq("user_id", numeric_user_id).execute().data
+    except Exception:
+        prefs = []
     dropped_genres = {p["genre"] for p in prefs if not p.get("is_liked", True)}
 
     is_late_night = local_hour is not None and (local_hour >= 22 or local_hour <= 5)

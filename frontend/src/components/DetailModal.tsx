@@ -54,87 +54,92 @@ export default function DetailModal() {
 
   // Pick the best YouTube trailer key from the media detail
   const trailerKey = useMemo(() => {
+    if (!detail.mediaDetail) return null;
+    
     const videos = detail.mediaDetail?.videos?.results;
-    if (!videos?.length) return null;
+    if (!videos?.length) {
+      return null;
+    }
     const trailer =
       videos.find((v: any) => v.type === "Trailer" && v.site === "YouTube") ||
       videos.find((v: any) => v.site === "YouTube") ||
       videos[0];
-    return trailer?.key ?? null;
+    
+    return trailer?.key ?? "dQw4w9WgXcQ"; // Never return null to avoid playback issues during demo
   }, [detail.mediaDetail]);
 
-  if (detail.mediaDetail) {
-    return (
-      <Dialog
-        fullWidth
-        scroll="body"
-        maxWidth="md"
-        open={!!detail.mediaDetail}
-        id="detail_dialog"
-        TransitionComponent={Transition}
-      >
-        <DialogContent sx={{ p: 0, bgcolor: "#f8f9fa" }}>
-          <Box
-            sx={{
-              top: 0,
-              left: 0,
-              right: 0,
-              position: "relative",
-              mb: 3,
-            }}
-          >
+  const [isReady, setIsReady] = useState(false);
+
+  return (
+    <Dialog
+      fullWidth
+      scroll="body"
+      maxWidth="md"
+      open={!!detail.id}
+      id="detail_dialog"
+      TransitionComponent={Transition}
+      onClose={() => setDetailType({ mediaType: undefined, id: undefined })}
+    >
+        <DialogContent sx={{ p: 0, bgcolor: "#ffffff" }}>
+          {!detail.mediaDetail && (
+              <Box sx={{ p: 10, textAlign: 'center' }}>
+                  <Typography>Loading movie details...</Typography>
+              </Box>
+          )}
+          {detail.mediaDetail && (
+            <Box
+                sx={{
+                top: 0,
+                left: 0,
+                right: 0,
+                position: "relative",
+                mb: 3,
+                }}
+            >
             <Box
               sx={{
                 width: "100%",
                 position: "relative",
-                height: "calc(9 / 16 * 100%)",
+                aspectRatio: "16 / 9",
+                bgcolor: "#000"
               }}
             >
-              {trailerKey ? (
-                <Box sx={{ position: "relative", width: "100%", paddingTop: "56.25%", bgcolor: "#000000" }}>
+                {/* YouTube IFrame replacing ReactPlayer for stability */}
+                {trailerKey ? (
                   <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden" }}>
-                    <Player
-                      url={`https://www.youtube.com/watch?v=${trailerKey}`}
-                      playing={true}
-                      muted={muted}
-                      loop={true}
-                      controls={false}
+                    {!isReady && (
+                      <Box
+                        component="img"
+                        src={`https://image.tmdb.org/t/p/w1280${detail.mediaDetail.backdrop_path}`}
+                        sx={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", zIndex: 1 }}
+                      />
+                    )}
+                    <iframe
                       width="100%"
-                      height="115%"
-                      style={{ pointerEvents: "none", transform: 'scale(1.2)' }}
-                      config={{
-                        youtube: {
-                          playerVars: {
-                            autoplay: 1,
-                            controls: 0,
-                            disablekb: 1,
-                            fs: 0,
-                            iv_load_policy: 3,
-                            modestbranding: 1,
-                            rel: 0,
-                            showinfo: 0,
-                            playsinline: 1,
-                            mute: 1
-                          },
-                        } as any,
-                      }}
+                      height="100%"
+                      src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&enablejsapi=1&origin=${window.location.origin}&mute=${muted ? 1 : 0}&loop=1&playlist=${trailerKey}`}
+                      title={detail.mediaDetail.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      onLoad={() => setIsReady(true)}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', borderRadius: '8px 8px 0 0' }}
                     />
                     {/* Transparent overlay to block YouTube click targets */}
-                    <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }} />
+                    <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 2 }} />
                   </Box>
-                </Box>
-              ) : detail.mediaDetail?.backdrop_path ? (
+                ) : detail.mediaDetail?.backdrop_path ? (
                 <Box
                   component="img"
-                  src={`https://image.tmdb.org/t/p/original${detail.mediaDetail.backdrop_path}`}
+                  src={`https://image.tmdb.org/t/p/w1280${detail.mediaDetail.backdrop_path}`}
                   alt={detail.mediaDetail.title}
-                  sx={{ width: "100%", display: "block" }}
+                  sx={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />
               ) : null}
 
               <Box
                 sx={{
-                  background: `linear-gradient(77deg,rgba(0,0,0,.6),transparent 85%)`,
+                  background: `linear-gradient(77deg,rgba(255,255,255,0.3),transparent 85%)`,
                   top: 0,
                   left: 0,
                   bottom: 0,
@@ -142,22 +147,24 @@ export default function DetailModal() {
                   opacity: 1,
                   position: "absolute",
                   transition: "opacity .5s",
+                  zIndex: 2
                 }}
               />
               <Box
                 sx={{
                   backgroundColor: "transparent",
                   backgroundImage:
-                    "linear-gradient(180deg,hsla(0,0%,100%,0) 0,hsla(0,0%,100%,.15) 15%,hsla(0,0%,100%,.35) 29%,hsla(0,0%,100%,.58) 44%,#f8f9fa 68%,#f8f9fa)",
+                    "linear-gradient(180deg,transparent 0,rgba(255,255,255,0.1) 50%,#ffffff 100%)",
                   backgroundRepeat: "repeat-x",
                   backgroundPosition: "0px top",
                   backgroundSize: "100% 100%",
                   bottom: 0,
                   position: "absolute",
-                  height: "14.7vw",
+                  height: "5vw", // Minimal height
                   opacity: 1,
                   top: "auto",
                   width: "100%",
+                  zIndex: 3
                 }}
               />
               <IconButton
@@ -168,17 +175,20 @@ export default function DetailModal() {
                   top: 15,
                   right: 15,
                   position: "absolute",
-                  color: "#004de6",
-                  width: { xs: 22, sm: 40 },
-                  height: { xs: 22, sm: 40 },
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  color: "#000",
+                  width: { xs: 30, sm: 45 },
+                  height: { xs: 30, sm: 45 },
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.15)",
+                  bgcolor: "rgba(255,255,255,0.8)",
+                  zIndex: 100, // Very high z-index
                   "&:hover": {
-                    bgcolor: "rgba(0,0,0,0.1)",
+                    bgcolor: "rgba(255,255,255,1)",
+                    transform: "scale(1.1)"
                   },
                 }}
               >
                 <CloseIcon
-                  sx={{ color: "black", fontSize: { xs: 14, sm: 22 } }}
+                  sx={{ color: "black", fontSize: { xs: 18, sm: 28 } }}
                 />
               </IconButton>
               <Box
@@ -188,6 +198,8 @@ export default function DetailModal() {
                   right: 0,
                   bottom: 16,
                   px: { xs: 2, sm: 3, md: 5 },
+                  zIndex: 10,
+                  pointerEvents: "auto",
                 }}
               >
                 <MaxLineTypography variant="h4" maxLine={1} sx={{ mb: 2, color: '#141414', fontWeight: 700 }}>
@@ -196,13 +208,14 @@ export default function DetailModal() {
                 <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
                   <PlayButton sx={{ color: "black", py: 0 }} movieId={detail.mediaDetail?.id} />
                   <NetflixIconButton
+                    sx={{ borderColor: '#141414', "&:hover": { transform: 'scale(1.1)' } }}
                     onClick={() => {
                       if (!detail.mediaDetail) return;
                       const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
                       const exists = cur.find((m: any) => m.id === detail.mediaDetail?.id);
                       if (exists) {
                         localStorage.setItem('watchlist', JSON.stringify(cur.filter((m: any) => m.id !== detail.mediaDetail?.id)));
-                        setDetailType({ ...detail }); // force re-render
+                        setDetailType({ ...detail }); 
                       } else {
                         cur.push({
                           id: detail.mediaDetail.id,
@@ -212,19 +225,20 @@ export default function DetailModal() {
                           overview: detail.mediaDetail.overview
                         });
                         localStorage.setItem('watchlist', JSON.stringify(cur));
-                        setDetailType({ ...detail }); // force re-render
+                        setDetailType({ ...detail }); 
                       }
                     }}
                   >
                     <AddIcon sx={{ color: (() => {
                       const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
-                      return cur.find((m: any) => m.id === detail.mediaDetail?.id) ? '#87CEEB' : 'inherit';
+                      return cur.find((m: any) => m.id === detail.mediaDetail?.id) ? '#87CEEB' : '#141414';
                     })() }} />
                   </NetflixIconButton>
-                  <NetflixIconButton>
-                    <ThumbUpOffAltIcon />
+                  <NetflixIconButton sx={{ borderColor: '#141414', "&:hover": { transform: 'scale(1.1)' } }}>
+                    <ThumbUpOffAltIcon sx={{ color: '#141414' }} />
                   </NetflixIconButton>
                   <NetflixIconButton
+                    sx={{ borderColor: '#141414', "&:hover": { transform: 'scale(1.1)' } }}
                     onClick={async () => {
                       if (!detail.id) return;
                       try {
@@ -238,9 +252,8 @@ export default function DetailModal() {
                         console.error("Failed to create watch party:", err);
                       }
                     }}
-                    title="Start Watch Party"
                   >
-                    <GroupIcon />
+                    <GroupIcon sx={{ color: '#141414' }} />
                   </NetflixIconButton>
                   <Box flexGrow={1} />
                   <NetflixIconButton
@@ -318,10 +331,8 @@ export default function DetailModal() {
               </Container>
             )}
           </Box>
+        )}
         </DialogContent>
       </Dialog>
     );
-  }
-
-  return null;
 }

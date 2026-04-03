@@ -20,11 +20,12 @@ export default function VideoItemWithHover({ video }: VideoItemWithHoverProps) {
     }
   }, [isHovered]);
 
+  const baseUrl = configuration?.images?.base_url || "https://image.tmdb.org/t/p/";
   const imgSrc = video.backdrop_path
-    ? `${configuration?.images.base_url}w300${video.backdrop_path}`
+    ? `${baseUrl}w300${video.backdrop_path}`
     : video.poster_path
-      ? `${configuration?.images.base_url}w300${video.poster_path}`
-      : `https://via.placeholder.com/300x170/f5f5f5/004de6?text=${encodeURIComponent(video.title || "CINEMAX")}`;
+      ? `${baseUrl}w300${video.poster_path}`
+      : `https://images.unsplash.com/photo-1440404653325-ab127d49abc1?q=80&w=500&auto=format&fit=crop`;
 
   return (
     <VideoItemWithHoverPure
