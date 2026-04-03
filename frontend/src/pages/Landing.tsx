@@ -43,31 +43,39 @@ export function Component() {
   };
 
   return (
-    <div style={{ backgroundColor: "#ffffff", minHeight: "100vh" }}>
-      <div className="hero">
-        <div className="overlay">
+    <div style={{ backgroundColor: "#ffffff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+      <div className="hero" style={{
+        backgroundColor: "#ffffff",
+        backgroundImage: "radial-gradient(at 0% 0%, hsla(210,100%,95%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(220,100%,92%,1) 0, transparent 50%)",
+        backgroundRepeat: "no-repeat",
+        minHeight: "80vh",
+        display: "flex",
+        flexDirection: "column",
+        borderBottom: "1px solid #f0f0f0"
+      }}>
+        <div className="overlay" style={{ background: "transparent" }}>
           <header>
-            <div className="header-container">
-              <h1 style={{ color: '#87CEEB', margin: 0, fontFamily: "'Inter', sans-serif", fontSize: '2.5rem', letterSpacing: '2px', fontWeight: 900 }}>
+            <div className="header-container" style={{ padding: "1.5rem 4rem" }}>
+              <h1 style={{ color: '#004de6', margin: 0, fontSize: '2.2rem', letterSpacing: '-1px', fontWeight: 900, cursor: 'pointer' }} onClick={() => navigate("/")}>
                 CINEMAX
               </h1>
 
               <div className="top-right">
-                <select className="language-select">
+                <select className="language-select" style={{ backgroundColor: 'white', border: '1px solid #e5e7eb', color: '#374151' }}>
                   <option value="en">English</option>
                   <option value="hi">हिंदी</option>
                 </select>
-                <button onClick={() => navigate("/login")} className="sign-in-btn" style={{ border: 'none', cursor: 'pointer', backgroundColor: '#0071eb', color: 'white' }}>
+                <button onClick={() => navigate("/login")} className="sign-in-btn" style={{ border: 'none', cursor: 'pointer', backgroundColor: '#004de6', color: 'white', padding: '10px 24px', borderRadius: '8px', fontWeight: 600, fontSize: '1rem', transition: 'all 0.2s' }}>
                   Sign In
                 </button>
               </div>
             </div>
           </header>
 
-          <div className="main-content">
-            <h1><b>Unlimited movies, TV <br />shows and more</b></h1>
-            <h3>Powered by AI. Personalized for you.</h3>
-            <p>Ready to watch? Enter your email to create or restart your membership.</p>
+          <div className="main-content" style={{ paddingTop: '8rem', color: '#111827' }}>
+            <h1 style={{ fontSize: '4.5rem', lineHeight: '1.1', letterSpacing: '-2px', marginBottom: '1.5rem' }}><b>Unlimited movies, TV <br />shows and more</b></h1>
+            <h3 style={{ fontSize: '1.5rem', color: '#4b5563', fontWeight: 400, marginTop: '0' }}>Powered by AI. Personalized for you.</h3>
+            <p style={{ fontSize: '1.1rem', color: '#6b7280', margin: '2.5rem 0 1.5rem' }}>Ready to watch? Enter your email to create or restart your membership.</p>
 
             <div className="email-form">
               <form className="email-form" onSubmit={handleGetStarted}>

@@ -10,7 +10,7 @@ export default function Logo({ sx }: BoxProps) {
         variant="h5"
         sx={{
           fontWeight: 900,
-          color: "#0071eb",
+          color: "#2563eb",
           letterSpacing: 3,
           fontFamily: "'Bebas Neue', sans-serif",
           fontSize: { xs: "1.4rem", md: "1.8rem" },

@@ -91,7 +91,7 @@ export default function VideoCardModal({
         <img
           src={imgSrc}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = `https://via.placeholder.com/780x439/141414/87CEEB?text=${encodeURIComponent(video.title || "CINEMAX")}`;
+            (e.target as HTMLImageElement).src = `https://via.placeholder.com/780x439/f5f5f5/004de6?text=${encodeURIComponent(video.title || "CINEMAX")}`;
           }}
           style={{
             top: 0,

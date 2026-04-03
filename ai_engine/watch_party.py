@@ -24,6 +24,7 @@ class ConnectionManager:
                  "host": username,
                  "status": "paused",
                  "timestamp": 0.0,
+                 "movie_id": None, # Will be set on first connect or via create
                  "last_updated": time.time(),
                  "participants": []
              }
@@ -39,7 +40,8 @@ class ConnectionManager:
             "participants": self.room_states[room_id]["participants"],
             "state": {
                "status": self.room_states[room_id]["status"],
-               "timestamp": self.room_states[room_id]["timestamp"]
+               "timestamp": self.room_states[room_id]["timestamp"],
+               "movie_id": self.room_states[room_id]["movie_id"]
             }
         })
 
@@ -70,7 +72,15 @@ manager = ConnectionManager()
 @party_router.post("/create")
 def create_party(movie_id: int):
     room_id = str(uuid.uuid4())[:8]
-    # Simple creation, rest is handled by real-time websockets
+    # Initialize room state so the first person joining knows the movie_id
+    manager.room_states[room_id] = {
+        "host": None,
+        "status": "paused",
+        "timestamp": 0.0,
+        "movie_id": movie_id,
+        "last_updated": time.time(),
+        "participants": []
+    }
     return {"room_id": room_id, "movie_id": movie_id, "share_link": f"/party/{room_id}"}
 
 @party_router.websocket("/ws/{room_id}")

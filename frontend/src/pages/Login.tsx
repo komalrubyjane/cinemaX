@@ -34,6 +34,9 @@ export function Component() {
         localStorage.setItem("token", data.token || "local-session");
         localStorage.setItem("userId", String(data.userId || "1"));
         localStorage.setItem("username", username);
+        if (data.profiles) {
+          localStorage.setItem("profiles", JSON.stringify(data.profiles));
+        }
         navigate("/profiles");
       } else {
         setError(data.detail || "Invalid credentials.");
@@ -58,15 +61,15 @@ export function Component() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.6)), url('https://assets.nflxext.com/ffe/siteui/vlv3/fc164b4b-f085-44ee-bb7f-ec7df8539571/d3b4e127-4bf6-4c5f-a5ba-fe27fcbeb2fb/IN-en-20240226-popsignuptwoithreads-perspective_alpha_website_small.jpg')`,
-        backgroundSize: "cover",
-        position: "relative"
+        background: `radial-gradient(circle at top left, hsla(210,100%,98%,1) 0%, hsla(220,100%,95%,1) 100%)`,
+        position: "relative",
+        fontFamily: "'Inter', sans-serif"
       }}
     >
-      <Box sx={{ position: "absolute", top: 20, left: 40 }}>
+      <Box sx={{ position: "absolute", top: 30, left: 50 }}>
         <Typography
           variant="h4"
-          sx={{ color: "#87CEEB", fontWeight: 900, letterSpacing: 2, cursor: "pointer" }}
+          sx={{ color: "#004de6", fontWeight: 900, letterSpacing: -1, cursor: "pointer" }}
           onClick={() => navigate("/")}
         >
           CINEMAX
@@ -75,16 +78,18 @@ export function Component() {
 
       <Box
         component={motion.div}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         sx={{
           width: "100%",
-          maxWidth: 450,
-          backgroundColor: "#fff",
-          p: 6,
-          borderRadius: 2,
-          color: "#333",
-          boxShadow: "0 10px 25px rgba(0,0,0,0.1)"
+          maxWidth: 460,
+          backgroundColor: "#ffffff",
+          p: 8,
+          borderRadius: 4,
+          color: "#111827",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.08)",
+          border: '1px solid #f3f4f6'
         }}
       >
         <Typography variant="h4" mb={4} fontWeight="bold">
@@ -136,11 +141,13 @@ export function Component() {
             sx={{
               p: 1.5,
               mb: 2,
-              backgroundColor: "#0071eb",
-              "&:hover": { backgroundColor: "#005bb5" },
+              backgroundColor: "#004de6",
+              "&:hover": { backgroundColor: "#003db3" },
               fontWeight: 700,
-              fontSize: "1rem",
-              color: 'white'
+              fontSize: "1.1rem",
+              color: 'white',
+              borderRadius: '8px',
+              textTransform: 'none'
             }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : "Sign In"}
@@ -150,7 +157,7 @@ export function Component() {
             fullWidth
             variant="outlined"
             onClick={fillDemo}
-            sx={{ color: "#0071eb", borderColor: "rgba(0,113,235,0.4)", mb: 4, "&:hover": { borderColor: "#0071eb", color: "#0071eb" } }}
+            sx={{ color: "#004de6", borderColor: "rgba(0,77,230,0.3)", mb: 4, borderRadius: '8px', textTransform: 'none', "&:hover": { borderColor: "#004de6", color: "#004de6", bgcolor: 'rgba(0,77,230,0.02)' } }}
           >
             Use Demo Account (admin / 1234)
           </Button>
@@ -159,7 +166,7 @@ export function Component() {
         <Typography variant="body2" color="gray" sx={{ mt: 2 }}>
           New to CINEMAX?{" "}
           <span
-            style={{ color: "#0071eb", cursor: "pointer", fontWeight: "bold" }}
+            style={{ color: "#004de6", cursor: "pointer", fontWeight: "bold" }}
             onClick={() => navigate("/signup")}
           >
             Sign up now.

@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Container from "@mui/material/Container";
@@ -14,6 +15,7 @@ import AddIcon from "@mui/icons-material/Add";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+import GroupIcon from "@mui/icons-material/Group";
 import ReactPlayer from "react-player";
 const Player: any = ReactPlayer;
 
@@ -38,6 +40,7 @@ const Transition = forwardRef(function Transition(
 });
 
 export default function DetailModal() {
+  const navigate = useNavigate();
   const { detail, setDetailType } = useDetailModal();
   const { data: similarVideos } = useGetSimilarVideosQuery(
     { mediaType: detail.mediaType ?? MEDIA_TYPE.Movie, id: detail.id ?? 0 },
@@ -70,7 +73,7 @@ export default function DetailModal() {
         id="detail_dialog"
         TransitionComponent={Transition}
       >
-        <DialogContent sx={{ p: 0, bgcolor: "#ffffff" }}>
+        <DialogContent sx={{ p: 0, bgcolor: "#f8f9fa" }}>
           <Box
             sx={{
               top: 0,
@@ -92,13 +95,13 @@ export default function DetailModal() {
                   <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden" }}>
                     <Player
                       url={`https://www.youtube.com/watch?v=${trailerKey}`}
-                      playing
+                      playing={true}
                       muted={muted}
-                      loop
+                      loop={true}
                       controls={false}
                       width="100%"
-                      height="100%"
-                      style={{ pointerEvents: "none" }}
+                      height="115%"
+                      style={{ pointerEvents: "none", transform: 'scale(1.2)' }}
                       config={{
                         youtube: {
                           playerVars: {
@@ -111,6 +114,7 @@ export default function DetailModal() {
                             rel: 0,
                             showinfo: 0,
                             playsinline: 1,
+                            mute: 1
                           },
                         } as any,
                       }}
@@ -144,7 +148,7 @@ export default function DetailModal() {
                 sx={{
                   backgroundColor: "transparent",
                   backgroundImage:
-                    "linear-gradient(180deg,hsla(0,0%,100%,0) 0,hsla(0,0%,100%,.15) 15%,hsla(0,0%,100%,.35) 29%,hsla(0,0%,100%,.58) 44%,#ffffff 68%,#ffffff)",
+                    "linear-gradient(180deg,hsla(0,0%,100%,0) 0,hsla(0,0%,100%,.15) 15%,hsla(0,0%,100%,.35) 29%,hsla(0,0%,100%,.58) 44%,#f8f9fa 68%,#f8f9fa)",
                   backgroundRepeat: "repeat-x",
                   backgroundPosition: "0px top",
                   backgroundSize: "100% 100%",
@@ -164,7 +168,7 @@ export default function DetailModal() {
                   top: 15,
                   right: 15,
                   position: "absolute",
-                  bgcolor: "#f5f5f5",
+                  color: "#004de6",
                   width: { xs: 22, sm: 40 },
                   height: { xs: 22, sm: 40 },
                   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
@@ -219,6 +223,24 @@ export default function DetailModal() {
                   </NetflixIconButton>
                   <NetflixIconButton>
                     <ThumbUpOffAltIcon />
+                  </NetflixIconButton>
+                  <NetflixIconButton
+                    onClick={async () => {
+                      if (!detail.id) return;
+                      try {
+                        const res = await fetch(`/api/ai/party/create?movie_id=${detail.id}`, { method: 'POST' });
+                        const data = await res.json();
+                        if (data.room_id) {
+                          navigate(`/party/${data.room_id}`);
+                          setDetailType({ mediaType: undefined, id: undefined });
+                        }
+                      } catch (err) {
+                        console.error("Failed to create watch party:", err);
+                      }
+                    }}
+                    title="Start Watch Party"
+                  >
+                    <GroupIcon />
                   </NetflixIconButton>
                   <Box flexGrow={1} />
                   <NetflixIconButton

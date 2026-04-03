@@ -40,7 +40,7 @@ export function Component() {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "#000000",
+        bgcolor: "#f4f6f8",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -48,7 +48,7 @@ export function Component() {
         p: { xs: 2, md: 4 },
       }}
     >
-      <Typography variant="h3" sx={{ color: "black", mb: 8, fontWeight: "bold" }}>
+      <Typography variant="h3" sx={{ color: "#1c1c1c", mb: 8, fontWeight: "bold" }}>
         Who's watching?
       </Typography>
 
@@ -65,10 +65,10 @@ export function Component() {
               alignItems: "center",
               cursor: "pointer",
               "&:hover .profile-img": {
-                bordercolor: "black",
+                borderColor: "#004de6",
               },
               "&:hover .profile-name": {
-                color: "black",
+                color: "#1c1c1c",
               },
             }}
           >
@@ -97,7 +97,7 @@ export function Component() {
               className="profile-name"
               sx={{
                 mt: 2,
-                color: "grey.500",
+                color: "grey.600",
                 fontSize: { xs: "1.2rem", md: "1.5rem" },
                 transition: "color 0.3s ease",
               }}
@@ -113,16 +113,16 @@ export function Component() {
         onClick={handleManage}
         sx={{
           mt: 8,
-          color: "grey.500",
-          borderColor: "grey.500",
+          color: "grey.700",
+          borderColor: "grey.400",
           letterSpacing: 2,
           px: 4,
           py: 1.5,
           fontSize: "1.2rem",
           "&:hover": {
-            color: "black",
-            bordercolor: "black",
-            bgcolor: "transparent",
+            color: "#1c1c1c",
+            borderColor: "#1c1c1c",
+            bgcolor: "rgba(0,0,0,0.05)",
           },
         }}
       >

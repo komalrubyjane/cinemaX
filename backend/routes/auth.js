@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'cinemax_secret_key_2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
 
 // @route   POST /api/auth/signup
 // @desc    Register a new user with username + password
@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
         }
 
         const token = jwt.sign(
-            { userId: user._id, username: user.username },
+            { sub: user._id, username: user.username },
             JWT_SECRET,
             { expiresIn: '7d' }
         );

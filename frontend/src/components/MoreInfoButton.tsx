@@ -25,9 +25,10 @@ export default function MoreInfoButton({ sx, ...others }: ButtonProps) {
         lineHeight: 1.5,
         fontWeight: "bold",
         textTransform: "capitalize",
-        bgcolor: "#6d6d6eb3",
+        bgcolor: "rgba(0,0,0,0.1)",
+        color: "black",
         whiteSpace: "nowrap",
-        "&:hover": { bgcolor: "#6d6d6e66" },
+        "&:hover": { bgcolor: "rgba(0,0,0,0.2)" },
       }}
     >
       More Info

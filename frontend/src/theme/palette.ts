@@ -2,7 +2,7 @@ import type { PaletteMode } from "@mui/material";
 
 const PRIMARY = {
   light: "#F4F6F8",
-  main: "#FFFFFF",
+  main: "#F9F9FB",
   dark: "#DFE3E8",
 };
 const GREY = {

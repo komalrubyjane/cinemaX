@@ -13,6 +13,9 @@ import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import GroupIcon from "@mui/icons-material/Group";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactPlayer from "react-player";
+const Player: any = ReactPlayer;
+import { TMDB_V3_API_KEY } from "src/constant";
 
 interface ChatMessage {
   type: "chat" | "system";
@@ -31,6 +34,11 @@ export function Component() {
   const [progress, setProgress] = useState(0);
   const [connected, setConnected] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [movieId, setMovieId] = useState<string | null>(null);
+  const [videoKey, setVideoKey] = useState<string | null>(null);
+  const [movieTitle, setMovieTitle] = useState("Loading...");
+  const playerRef = useRef<any>(null);
+  const isInternalChange = useRef(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -79,10 +87,16 @@ export function Component() {
           if (data.state) {
             setPlaybackStatus(data.state.status);
             setProgress(data.state.timestamp);
+            if (data.state.movie_id) setMovieId(String(data.state.movie_id));
           }
         } else if (data.type === "sync") {
+          isInternalChange.current = true;
           setPlaybackStatus(data.status);
           setProgress(data.timestamp);
+          if (playerRef.current) {
+            playerRef.current.seekTo(data.timestamp, "seconds");
+          }
+          setTimeout(() => { isInternalChange.current = false; }, 500);
         }
       };
 
@@ -97,9 +111,45 @@ export function Component() {
   }, [messages]);
 
   useEffect(() => {
+    if (!movieId) return;
+    fetch(`https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=${TMDB_V3_API_KEY}`)
+      .then(r => r.json())
+      .then(data => {
+        const trailer = data.results?.find((v: any) => v.type === "Trailer" && v.site === "YouTube") || data.results?.[0];
+        if (trailer?.key) setVideoKey(trailer.key);
+      });
+    fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_V3_API_KEY}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.title) setMovieTitle(data.title);
+      });
+  }, [movieId]);
+
+  // Handle local playback events to sync with others
+  const handlePlay = () => {
+    if (isInternalChange.current) return;
+    setPlaybackStatus("playing");
+    wsRef.current?.send(JSON.stringify({ action: "play", status: "playing", timestamp: progress }));
+  };
+
+  const handlePause = () => {
+    if (isInternalChange.current) return;
+    setPlaybackStatus("paused");
+    wsRef.current?.send(JSON.stringify({ action: "pause", status: "paused", timestamp: progress }));
+  };
+
+  const handleSeek = (value: number) => {
+    if (isInternalChange.current) return;
+    setProgress(value);
+    wsRef.current?.send(JSON.stringify({ action: "seek", status: playbackStatus, timestamp: value }));
+  };
+
+  useEffect(() => {
     if (playbackStatus !== "playing") return;
     const interval = setInterval(() => {
-      setProgress((p) => Math.min(p + 1, 180));
+      if (playerRef.current) {
+        setProgress(playerRef.current.getCurrentTime());
+      }
     }, 1000);
     return () => clearInterval(interval);
   }, [playbackStatus]);
@@ -138,6 +188,7 @@ export function Component() {
 
   const seek = (value: number) => {
     setProgress(value);
+    playerRef.current?.seekTo(value, "seconds");
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ action: "seek", status: playbackStatus, timestamp: value }));
     }
@@ -210,38 +261,58 @@ export function Component() {
           </Button>
         </Box>
 
-        {/* Video Area */}
         <Box
           sx={{
             position: "relative",
             width: "100%",
             aspectRatio: "16/9",
-            bgcolor: "#0a0a0a",
+            bgcolor: "#000",
             borderRadius: 2,
             overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             border: "1px solid rgba(0,0,0,0.06)",
           }}
         >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 2,
-              color: "grey.600",
-            }}
-          >
-            <Typography sx={{ fontSize: "5rem" }}>🎬</Typography>
-            <Typography variant="body1" color="grey.500">
-              Synchronized playback powered by CINEMAX
-            </Typography>
-            <Typography variant="caption" color="grey.700">
-              All participants see the same frame at the same time
-            </Typography>
-          </Box>
+          {videoKey ? (
+            <Player
+              ref={playerRef}
+              url={`https://www.youtube.com/watch?v=${videoKey}`}
+              width="100%"
+              height="100%"
+              playing={playbackStatus === "playing"}
+              onPlay={handlePlay}
+              onPause={handlePause}
+              progressInterval={1000}
+              onProgress={(p: any) => setProgress(p.playedSeconds)}
+              config={{
+                youtube: {
+                  playerVars: { controls: 0, modestbranding: 1, rel: 0, showinfo: 0 }
+                }
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+                color: "grey.600",
+                height: '100%',
+                justifyContent: 'center'
+              }}
+            >
+              <Typography sx={{ fontSize: "5rem" }}>🎬</Typography>
+              <Typography variant="body1" color="grey.500">
+                {movieTitle}
+              </Typography>
+              <Typography variant="caption" color="grey.700">
+                Loading synchronized playback...
+              </Typography>
+            </Box>
+          )}
+
+          {/* Transparent interaction blocker for YouTube UI */}
+          <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1, pointerEvents: playbackStatus === 'playing' ? 'all' : 'none' }} onClick={togglePlay} />
 
           {/* Playback controls overlay */}
           <Box

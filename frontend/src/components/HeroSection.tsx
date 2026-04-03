@@ -35,7 +35,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
   const [video, setVideo] = useState<Movie | null>(null);
   const [muted, setMuted] = useState(true);
   const [videoKey, setVideoKey] = useState<string | null>(null);
-  const isOffset = useOffSetTop(window.innerWidth * 0.5625);
+  const isOffset = useOffSetTop(600);
   const { setDetailType } = useDetailModal();
   const maturityRate = useMemo(() => {
     return getRandomNumber(20);
@@ -116,13 +116,13 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   >
                     <Player
                       url={`https://www.youtube.com/watch?v=${videoKey}`}
-                      playing
+                      playing={true}
                       muted={muted}
-                      loop
+                      loop={true}
                       controls={false}
                       width="100%"
-                      height="100%"
-                      style={{ pointerEvents: "none" }}
+                      height="115%"
+                      style={{ pointerEvents: "none", transform: 'scale(1.2)' }}
                       config={{
                         youtube: {
                           playerVars: {
@@ -135,6 +135,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                             rel: 0,
                             showinfo: 0,
                             playsinline: 1,
+                            mute: 1
                           },
                         } as any,
                       }}
@@ -190,7 +191,7 @@ export default function TopTrailer({ mediaType }: TopTrailerProps) {
                   sx={{
                     backgroundColor: "transparent",
                     backgroundImage:
-                      "linear-gradient(180deg,hsla(0,0%,100%,0) 0,hsla(0,0%,100%,.15) 15%,hsla(0,0%,100%,.35) 29%,hsla(0,0%,100%,.58) 44%,#ffffff 68%,#ffffff)",
+                      "linear-gradient(180deg,hsla(0,0%,97.3%,0) 0,hsla(0,0%,97.3%,.15) 15%,hsla(0,0%,97.3%,.35) 29%,hsla(0,0%,97.3%,.58) 44%,#f8f9fa 68%,#f8f9fa)",
                     backgroundRepeat: "repeat-x",
                     backgroundPosition: "0px top",
                     backgroundSize: "100% 100%",

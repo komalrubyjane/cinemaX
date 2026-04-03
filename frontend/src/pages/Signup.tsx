@@ -55,15 +55,15 @@ export function Component() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://assets.nflxext.com/ffe/siteui/vlv3/fc164b4b-f085-44ee-bb7f-ec7df8539571/d3b4e127-4bf6-4c5f-a5ba-fe27fcbeb2fb/IN-en-20240226-popsignuptwoithreads-perspective_alpha_website_small.jpg')`,
-        backgroundSize: "cover",
-        position: "relative"
+        background: `radial-gradient(circle at bottom right, hsla(210,100%,98%,1) 0%, hsla(220,100%,95%,1) 100%)`,
+        position: "relative",
+        fontFamily: "'Inter', sans-serif"
       }}
     >
-      <Box sx={{ position: "absolute", top: 20, left: 40 }}>
+      <Box sx={{ position: "absolute", top: 30, left: 50 }}>
         <Typography
           variant="h4"
-          sx={{ color: "#87CEEB", fontWeight: 900, letterSpacing: 2, cursor: "pointer" }}
+          sx={{ color: "#004de6", fontWeight: 900, letterSpacing: -1, cursor: "pointer" }}
           onClick={() => navigate("/")}
         >
           CINEMAX
@@ -72,15 +72,18 @@ export function Component() {
 
       <Box
         component={motion.div}
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         sx={{
           width: "100%",
-          maxWidth: 450,
-          backgroundColor: "rgba(0,0,0,0.75)",
-          p: 6,
-          borderRadius: 2,
-          color: "white"
+          maxWidth: 460,
+          backgroundColor: "#ffffff",
+          p: 8,
+          borderRadius: 4,
+          color: "#111827",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.08)",
+          border: '1px solid #f3f4f6'
         }}
       >
         <Typography variant="h4" mb={4} fontWeight="bold">
@@ -96,10 +99,10 @@ export function Component() {
             onChange={(e) => setUsername(e.target.value)}
             sx={{
               mb: 2,
-              backgroundColor: "#333",
+              backgroundColor: "#f5f5f5",
               borderRadius: 1,
-              input: { color: "white" },
-              "& .MuiFilledInput-root": { backgroundColor: "#333" }
+              input: { color: "#333" },
+              "& .MuiFilledInput-root": { backgroundColor: "#f5f5f5" }
             }}
           />
           <TextField
@@ -111,10 +114,10 @@ export function Component() {
             onChange={(e) => setPassword(e.target.value)}
             sx={{
               mb: 2,
-              backgroundColor: "#333",
+              backgroundColor: "#f5f5f5",
               borderRadius: 1,
-              input: { color: "white" },
-              "& .MuiFilledInput-root": { backgroundColor: "#333" }
+              input: { color: "#333" },
+              "& .MuiFilledInput-root": { backgroundColor: "#f5f5f5" }
             }}
           />
           <TextField
@@ -126,10 +129,10 @@ export function Component() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             sx={{
               mb: 4,
-              backgroundColor: "#333",
+              backgroundColor: "#f5f5f5",
               borderRadius: 1,
-              input: { color: "white" },
-              "& .MuiFilledInput-root": { backgroundColor: "#333" }
+              input: { color: "#333" },
+              "& .MuiFilledInput-root": { backgroundColor: "#f5f5f5" }
             }}
           />
 
@@ -147,20 +150,23 @@ export function Component() {
             sx={{
               p: 1.5,
               mb: 4,
-              backgroundColor: "#87CEEB",
-              "&:hover": { backgroundColor: "#0284c7" },
+              backgroundColor: "#004de6",
+              "&:hover": { backgroundColor: "#003db3" },
               fontWeight: 700,
-              fontSize: "1rem"
+              fontSize: "1.1rem",
+              color: 'white',
+              borderRadius: '8px',
+              textTransform: 'none'
             }}
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
           </Button>
         </form>
 
-        <Typography variant="body2" color="gray">
+        <Typography variant="body2" color="gray" sx={{ mt: 2 }}>
           Already have an account?{" "}
           <span
-            style={{ color: "white", cursor: "pointer", fontWeight: "bold" }}
+            style={{ color: "#004de6", cursor: "pointer", fontWeight: "bold" }}
             onClick={() => navigate("/login")}
           >
             Sign in now.
