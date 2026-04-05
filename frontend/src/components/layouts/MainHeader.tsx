@@ -155,6 +155,9 @@ const MainHeader = () => {
                 {username}
               </Typography>
             </MenuItem>
+            <MenuItem onClick={() => { handleCloseUserMenu(); navigate("/account"); }}>
+              <Typography textAlign="center">Account Settings</Typography>
+            </MenuItem>
             <MenuItem onClick={() => { handleCloseUserMenu(); navigate("/profiles"); }}>
               <Typography textAlign="center">Switch Profile</Typography>
             </MenuItem>

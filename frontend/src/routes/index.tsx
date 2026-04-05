@@ -50,6 +50,10 @@ const router = createBrowserRouter([
         ],
       },
       {
+        path: "/account",
+        lazy: () => import("src/pages/Account"),
+      },
+      {
         path: MAIN_PATH.watch,
         lazy: () => import("src/pages/WatchPage"),
       },
