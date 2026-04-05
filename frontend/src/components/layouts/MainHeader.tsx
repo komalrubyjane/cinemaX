@@ -138,7 +138,7 @@ const MainHeader = () => {
           </Tooltip>
           <Tooltip title={username}>
             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-              <Avatar alt="user_avatar" src="/avatar.png" variant="rounded" />
+              <Avatar alt="user_avatar" src={localStorage.getItem("userAvatar") || "/avatar.png"} variant="rounded" />
             </IconButton>
           </Tooltip>
           <Menu

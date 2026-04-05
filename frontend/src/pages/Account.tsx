@@ -6,21 +6,38 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
-import PersonIcon from "@mui/icons-material/Person";
-import SecurityIcon from "@mui/icons-material/Security";
-import EmailIcon from "@mui/icons-material/Email";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import IconButton from "@mui/material/IconButton";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
 export function Component() {
   const navigate = useNavigate();
-  const username = localStorage.getItem("username") || "User";
-  const userId = localStorage.getItem("userId") || "N/A";
   
-  // Simulated email (usually from auth/me) or just a mock
-  const email = localStorage.getItem("email") || `${username.toLowerCase()}@cinemax.com`;
+  // Local state for account data
+  const [username, setUsername] = useState(localStorage.getItem("username") || "User");
+  const [avatar, setAvatar] = useState(localStorage.getItem("userAvatar") || "");
+  const userId = localStorage.getItem("userId") || "N/A";
 
-  const [isChangingPass, setIsChangingPass] = useState(false);
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatar(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSave = () => {
+    if (!username.trim()) return;
+    localStorage.setItem("username", username);
+    localStorage.setItem("userAvatar", avatar);
+    
+    // Refresh header by navigating briefly or just alerting
+    alert("Account settings updated successfully! 🍿");
+    navigate("/browse");
+  };
 
   return (
     <Box sx={{ 
@@ -33,137 +50,118 @@ export function Component() {
       flexDirection: 'column',
       alignItems: 'center'
     }}>
-      <Box sx={{ maxWidth: 800, width: '100%' }}>
+      <Box sx={{ maxWidth: 600, width: '100%' }}>
         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 6 }}>
           <IconButton onClick={() => navigate("/browse")} sx={{ color: "black" }}>
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h4" sx={{ fontWeight: 900, fontFamily: "'Outfit', sans-serif" }}>
-            Account Settings
+            Edit Account Profile
           </Typography>
         </Stack>
 
         <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' }, 
-          gap: 4 
+          p: 5, 
+          borderRadius: '32px', 
+          bgcolor: '#fff', 
+          boxShadow: '0 10px 40px rgba(0,0,0,0.05)',
+          border: '1px solid #f0f0f0',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 4
         }}>
-          {/* Left: Info Card */}
-          <Box sx={{ 
-            p: 4, 
-            borderRadius: '24px', 
-            bgcolor: 'rgba(0,162,255,0.05)', 
-            border: '1px solid rgba(0,162,255,0.1)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center'
-          }}>
-            <Avatar sx={{ 
-              width: 100, 
-              height: 100, 
-              bgcolor: '#00a2ff', 
-              fontSize: '2.5rem', 
-              mb: 2,
-              boxShadow: '0 8px 16px rgba(0,162,255,0.2)'
-            }}>
-              {username[0].toUpperCase()}
+          {/* Photo Section */}
+          <Box sx={{ position: 'relative' }}>
+            <Avatar 
+                src={avatar}
+                sx={{ 
+                    width: 140, 
+                    height: 140, 
+                    bgcolor: '#00a2ff', 
+                    fontSize: '3.5rem', 
+                    boxShadow: '0 12px 24px rgba(0,162,255,0.15)',
+                    border: '4px solid white'
+                }}
+            >
+              {!avatar && username[0]?.toUpperCase()}
             </Avatar>
-            <Typography variant="h6" sx={{ fontWeight: 800 }}>{username}</Typography>
-            <Typography variant="body2" color="text.secondary">Member Since 2026</Typography>
-            <Typography variant="caption" sx={{ mt: 1, color: 'grey.500' }}>ID: {userId}</Typography>
+            <IconButton
+                component="label"
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  bgcolor: '#141414',
+                  color: 'white',
+                  '&:hover': { bgcolor: '#333' },
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  border: '2px solid white'
+                }}
+              >
+                <PhotoCameraIcon fontSize="small" />
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                />
+              </IconButton>
           </Box>
 
-          {/* Right: Settings Form */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <EmailIcon fontSize="small" sx={{ color: '#00a2ff' }} /> Account Identity
-              </Typography>
-              <Stack spacing={3}>
-                <TextField 
-                  fullWidth 
-                  label="Username" 
-                  value={username} 
-                  disabled 
-                  variant="outlined" 
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px" } }} 
-                />
-                <TextField 
-                  fullWidth 
-                  label="Email Address" 
-                  value={email} 
-                  disabled 
-                  variant="outlined" 
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px" } }} 
-                />
-              </Stack>
-            </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
+            ID: {userId}
+          </Typography>
 
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <SecurityIcon fontSize="small" sx={{ color: '#00a2ff' }} /> Security & Privacy
-              </Typography>
-              {!isChangingPass ? (
-                <Button 
-                  variant="outlined" 
-                  onClick={() => setIsChangingPass(true)}
-                  sx={{ 
-                    borderRadius: '12px', 
-                    px: 3, 
+          {/* Name Section */}
+          <Box sx={{ width: '100%', mt: 2 }}>
+            <TextField 
+              fullWidth 
+              label="Account Name" 
+              value={username} 
+              onChange={(e) => setUsername(e.target.value)}
+              variant="outlined" 
+              placeholder="Enter your name"
+              sx={{ 
+                "& .MuiOutlinedInput-root": { 
+                  borderRadius: "16px",
+                  bgcolor: '#f8fafc'
+                } 
+              }} 
+            />
+          </Box>
+
+          <Stack direction="row" spacing={2} sx={{ width: '100%', mt: 2 }}>
+            <Button 
+                onClick={handleSave}
+                fullWidth
+                variant="contained" 
+                sx={{ 
+                    bgcolor: '#00a2ff', 
+                    borderRadius: '16px', 
+                    py: 1.8,
+                    fontWeight: 900,
+                    boxShadow: '0 8px 20px rgba(0,162,255,0.2)',
+                    '&:hover': { bgcolor: '#0084d1' }
+                }}
+            >
+                Save Changes
+            </Button>
+            <Button 
+                onClick={() => navigate("/browse")}
+                fullWidth
+                variant="outlined"
+                sx={{ 
+                    borderRadius: '16px', 
+                    py: 1.8,
                     fontWeight: 700,
-                    color: '#141414',
-                    borderColor: '#ddd',
-                    "&:hover": { borderColor: '#00a2ff', color: '#00a2ff' }
-                  }}
-                >
-                  Change Password
-                </Button>
-              ) : (
-                <Stack spacing={2}>
-                  <TextField 
-                    type="password" 
-                    fullWidth 
-                    label="Current Password" 
-                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px" } }} 
-                  />
-                  <TextField 
-                    type="password" 
-                    fullWidth 
-                    label="New Password" 
-                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px" } }} 
-                  />
-                  <Stack direction="row" spacing={2}>
-                    <Button 
-                      variant="contained" 
-                      onClick={() => setIsChangingPass(false)}
-                      sx={{ bgcolor: '#00a2ff', borderRadius: '12px', px: 4, fontWeight: 900 }}
-                    >
-                      Update
-                    </Button>
-                    <Button 
-                      onClick={() => setIsChangingPass(false)}
-                      sx={{ color: '#666', fontWeight: 700 }}
-                    >
-                      Cancel
-                    </Button>
-                  </Stack>
-                </Stack>
-              )}
-            </Box>
-
-            <Box sx={{ p: 3, borderRadius: '16px', bgcolor: '#fff9f9', border: '1px solid #fee' }}>
-              <Typography variant="body2" sx={{ color: '#d32f2f', fontWeight: 700 }}>
-                Danger Zone
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                Once you delete your account, there is no going back. Please be certain.
-              </Typography>
-              <Button variant="text" sx={{ color: '#d32f2f', fontWeight: 700, textTransform: 'none' }}>
-                Delete my account
-              </Button>
-            </Box>
-          </Box>
+                    color: '#666',
+                    borderColor: '#ddd'
+                }}
+            >
+                Cancel
+            </Button>
+          </Stack>
         </Box>
       </Box>
     </Box>
