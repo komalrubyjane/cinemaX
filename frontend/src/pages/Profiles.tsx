@@ -7,25 +7,40 @@ import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  TextField, 
+  Select, 
+  MenuItem, 
+  FormControl, 
+  InputLabel, 
+} from "@mui/material";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
 export function Component() {
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
+  // Dialog State
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentEdit, setCurrentEdit] = useState<any>(null);
+  const [isNewRecord, setIsNewRecord] = useState(false);
+
   useEffect(() => {
     const userId = localStorage.getItem("userId") || "1";
     const PROFILES_KEY = `profiles_${userId}`;
-    
     const profs = localStorage.getItem(PROFILES_KEY);
     const profList = profs ? JSON.parse(profs) : [];
-    const hasDefault = profList.length > 0;
 
     if (!profs || profList.length === 0) {
       const defaultProfiles = [
-        { _id: "1", name: "User", type: "Adult", avatar: "1" },
-        { _id: "2", name: "Family", type: "Family", avatar: "2" },
-        { _id: "3", name: "Kids", type: "Kids", avatar: "3" },
+        { _id: "1", name: "User", type: "Adult", avatar: "👤" },
+        { _id: "2", name: "Family", type: "Family", avatar: "👪" },
+        { _id: "3", name: "Kids", type: "Kids", avatar: "🧒" },
       ];
       localStorage.setItem(PROFILES_KEY, JSON.stringify(defaultProfiles));
       setProfiles(defaultProfiles);
@@ -39,52 +54,65 @@ export function Component() {
     const ACTIVE_PROFILE_KEY = `activeProfile_${userId}`;
     
     if (isEditing) {
-      handleEdit(p);
+      startEdit(p);
       return;
     }
     localStorage.setItem(ACTIVE_PROFILE_KEY, JSON.stringify(p));
-    // Keep 'activeProfile' as a global alias for convenience
     localStorage.setItem("activeProfile", JSON.stringify(p));
     navigate("/browse");
   };
 
-  const handleEdit = (p: any) => {
+  const startEdit = (p: any) => {
+    setCurrentEdit({ ...p });
+    setIsNewRecord(false);
+    setDialogOpen(true);
+  };
+
+  const handleAdd = () => {
+    setCurrentEdit({ _id: Date.now().toString(), name: "", type: "Adult", avatar: "👤" });
+    setIsNewRecord(true);
+    setDialogOpen(true);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCurrentEdit((prev: any) => ({ ...prev, avatar: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveProfile = () => {
+    if (!currentEdit.name.trim()) return;
+
     const userId = localStorage.getItem("userId") || "1";
     const PROFILES_KEY = `profiles_${userId}`;
     const ACTIVE_PROFILE_KEY = `activeProfile_${userId}`;
 
-    const newName = prompt("Edit profile name:", p.name);
-    if (!newName) return;
-    const newType = prompt("Edit profile type (Adult/Kids/Family):", p.type);
-    
-    const updated = profiles.map(prof => 
-      prof._id === p._id ? { ...prof, name: newName, type: newType || "Adult" } : prof
-    );
+    let updated;
+    if (isNewRecord) {
+      updated = [...profiles, currentEdit];
+    } else {
+      updated = profiles.map(p => p._id === currentEdit._id ? currentEdit : p);
+    }
+
     setProfiles(updated);
     localStorage.setItem(PROFILES_KEY, JSON.stringify(updated));
     
     // Update active profile if it was the one edited
     const activeRaw = localStorage.getItem(ACTIVE_PROFILE_KEY);
-    if (activeRaw && JSON.parse(activeRaw)._id === p._id) {
-       const newProfile = { ...p, name: newName, type: newType || "Adult" };
-       localStorage.setItem(ACTIVE_PROFILE_KEY, JSON.stringify(newProfile));
-       localStorage.setItem("activeProfile", JSON.stringify(newProfile));
+    if (activeRaw && JSON.parse(activeRaw)._id === currentEdit._id) {
+       localStorage.setItem(ACTIVE_PROFILE_KEY, JSON.stringify(currentEdit));
+       localStorage.setItem("activeProfile", JSON.stringify(currentEdit));
     }
+
+    setDialogOpen(false);
   };
 
-  const handleAdd = () => {
-    const userId = localStorage.getItem("userId") || "1";
-    const PROFILES_KEY = `profiles_${userId}`;
-
-    const name = prompt("Enter new profile name:");
-    if (!name) return;
-    const type = prompt("Enter profile type (Adult/Kids/Family):", "Family");
-
-    const newProfile = { _id: Date.now().toString(), name, type: type || "Adult", avatar: "1" };
-    const updated = [...profiles, newProfile];
-    setProfiles(updated);
-    localStorage.setItem(PROFILES_KEY, JSON.stringify(updated));
-  };
+  const isImage = (avatar: string) => avatar && (avatar.startsWith('http') || avatar.startsWith('data:image'));
 
   return (
     <Box
@@ -129,7 +157,8 @@ export function Component() {
                 width: { xs: 120, md: 160 },
                 height: { xs: 120, md: 160 },
                 borderRadius: 2,
-                bgcolor: p.type === "Kids" ? "#ffc107" : (p.type === "Family" ? "#4caf50" : "#00a2ff"),
+                bgcolor: isImage(p.avatar) ? 'transparent' : (p.type === "Kids" ? "#ffc107" : (p.type === "Family" ? "#4caf50" : "#00a2ff")),
+                backgroundImage: isImage(p.avatar) ? `url(${p.avatar})` : 'none',
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 border: "4px solid transparent",
@@ -139,10 +168,11 @@ export function Component() {
                 justifyContent: "center",
                 fontSize: "4.5rem",
                 boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-                position: "relative"
+                position: "relative",
+                overflow: "hidden"
               }}
             >
-              {p.type === 'Kids' ? '🧒' : (p.type === 'Family' ? '👪' : '👤')}
+              {!isImage(p.avatar) && p.avatar}
               
               {isEditing && (
                 <Box
@@ -218,6 +248,116 @@ export function Component() {
           </Button>
         )}
       </Stack>
+
+      {/* Edit/Add Dialog */}
+      <Dialog 
+        open={dialogOpen} 
+        onClose={() => setDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: "#fff",
+            borderRadius: "24px",
+            p: 2,
+            minWidth: { xs: "90%", sm: 450 }
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 900, textAlign: 'center', fontSize: '1.8rem' }}>
+          {isNewRecord ? "Add Profile" : "Edit Profile"}
+        </DialogTitle>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+            <Box sx={{ position: 'relative' }}>
+               <Box
+                sx={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "24px",
+                  bgcolor: isImage(currentEdit?.avatar) ? 'transparent' : "#00a2ff",
+                  backgroundImage: isImage(currentEdit?.avatar) ? `url(${currentEdit.avatar})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '3rem',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                  border: '2px solid #eaeaea'
+                }}
+              >
+                {!isImage(currentEdit?.avatar) && currentEdit?.avatar}
+              </Box>
+              <IconButton
+                component="label"
+                sx={{
+                  position: 'absolute',
+                  bottom: -10,
+                  right: -10,
+                  bgcolor: '#141414',
+                  color: 'white',
+                  '&:hover': { bgcolor: '#333' }
+                }}
+              >
+                <PhotoCameraIcon fontSize="small" />
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                />
+              </IconButton>
+            </Box>
+          </Box>
+
+          <TextField
+            fullWidth
+            label="Profile Name"
+            variant="outlined"
+            value={currentEdit?.name || ""}
+            onChange={(e) => setCurrentEdit({ ...currentEdit, name: e.target.value })}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "12px",
+              }
+            }}
+          />
+
+          <FormControl fullWidth variant="outlined">
+            <InputLabel>Maturity Level</InputLabel>
+            <Select
+              label="Maturity Level"
+              value={currentEdit?.type || "Adult"}
+              onChange={(e) => setCurrentEdit({ ...currentEdit, type: e.target.value })}
+              sx={{ borderRadius: "12px" }}
+            >
+              <MenuItem value="Adult">Adult (All Content)</MenuItem>
+              <MenuItem value="Family">Family (Safe Filter)</MenuItem>
+              <MenuItem value="Kids">Kids (Children Only)</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, justifyContent: 'center', gap: 2 }}>
+          <Button 
+            onClick={() => setDialogOpen(false)} 
+            sx={{ px: 4, borderRadius: '12px', fontWeight: 700, color: '#666' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={saveProfile}
+            variant="contained"
+            sx={{ 
+              px: 5, 
+              borderRadius: '12px', 
+              fontWeight: 900, 
+              bgcolor: '#00a2ff',
+              '&:hover': { bgcolor: '#0084d1' }
+            }}
+          >
+            {isNewRecord ? "Create" : "Save Changes"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

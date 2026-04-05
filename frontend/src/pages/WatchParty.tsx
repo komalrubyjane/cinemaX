@@ -52,12 +52,17 @@ export function Component() {
     setMessages([{ type: "system", message: `Welcome ${username}! Share this link to start some popcorn 🍿` }]);
 
     // Connect to Socket.IO backend
-    const BACKEND_URL = window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://cinematch-backend-production.up.railway.app'; // Change as needed
-    const socket = io(BACKEND_URL);
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.');
+    const BACKEND_URL = isLocal ? `http://${window.location.hostname}:5001` : 'https://cinematch-backend-production.up.railway.app';
+    const socket = io(BACKEND_URL, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5
+    });
     socketRef.current = socket;
 
     socket.on('connect', () => {
       setConnected(true);
+      console.log("✅ Socket connected:", socket.id);
       // Fetch room details to know which movie to play
       fetch(`/api/ai/party/${roomId}`)
         .then(res => res.json())
@@ -69,7 +74,15 @@ export function Component() {
       socket.emit('join_room', { roomId, username });
     });
 
-    socket.on('disconnect', () => setConnected(false));
+    socket.on('connect_error', (err) => {
+      console.error("❌ Socket connection error:", err.message);
+      setConnected(false);
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.warn("🔻 Socket disconnected:", reason);
+      setConnected(false);
+    });
 
     socket.on('message', (msg: any) => {
       setMessages(prev => [...prev, msg]);
