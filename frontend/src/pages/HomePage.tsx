@@ -26,7 +26,29 @@ export function Component() {
     const { data: genres, isLoading, isError } = useGetGenresQuery(MEDIA_TYPE.Movie);
     console.log("Genres query result:", { genres: genres?.length || 0, isLoading, isError });
 
-    const displayGenres = genres && genres.length > 0 ? genres : [];
+    const activeProfileRaw = localStorage.getItem("activeProfile");
+    const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { type: "Adult" };
+    const profileType = activeProfile.type || "Adult";
+
+    let displayCommon = [...COMMON_TITLES];
+    let displayGenres = genres && genres.length > 0 ? [...genres] : [];
+
+    // Filter rows based on profile type
+    if (profileType === "Kids") {
+      // Only keep Animation row if available, and maybe Family
+      displayGenres = (genres || []).filter(g => 
+        g.name === "Animation" || g.name === "Family"
+      );
+      // Simplify common rows for kids
+      displayCommon = COMMON_TITLES.filter(c => 
+        ["popular", "cinemax_recs"].includes(c.apiString)
+      );
+    } else if (profileType === "Family") {
+      // Remove Romance, Horror, etc.
+      displayGenres = (genres || []).filter(g => 
+        !["Romance", "Horror", "Thriller", "Crime", "Mystery"].includes(g.name)
+      );
+    }
 
     return (
       <Box sx={{ 
@@ -52,7 +74,7 @@ export function Component() {
         )}
         
         <Box sx={{ pb: 10 }}>
-          {[...COMMON_TITLES, ...displayGenres].map((genre: Genre | CustomGenre) => (
+          {[...displayCommon, ...displayGenres].map((genre: Genre | CustomGenre) => (
             <Box key={genre.id || genre.name} sx={{ mb: 6 }}>
               <SliderRowForGenre
                 genre={genre}

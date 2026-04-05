@@ -316,6 +316,33 @@ export function Component() {
       )
         .then((r) => r.json())
         .then((data) => {
+          // Record watch history for this profile
+          try {
+            const userId = localStorage.getItem("userId") || "1";
+            const activeProfileRaw = localStorage.getItem("activeProfile");
+            const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { _id: "1" };
+            const profileId = activeProfile._id || "1";
+            
+            // 1. Backend sync
+            fetch('/api/ai/watch_progress', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                user_id: Number(profileId),
+                movie_id: Number(movieId),
+                progress_percent: 100
+              })
+            }).catch(e => console.error("History sync failed:", e));
+
+            // 2. Local fallback
+            const histKey = `history_${userId}_${profileId}`;
+            const history = JSON.parse(localStorage.getItem(histKey) || '[]');
+            if (!history.includes(movieId)) {
+              history.push(movieId);
+              localStorage.setItem(histKey, JSON.stringify(history.slice(-50))); // Keep last 50
+            }
+          } catch (e) {}
+
           let trailer =
             data.results?.find(
               (v: any) => v.type === "Trailer" && v.site === "YouTube"

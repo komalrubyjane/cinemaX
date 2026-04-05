@@ -745,6 +745,7 @@ def recommend_multi(
 @app.get("/api/search")
 def search_movies(
     query: str = "",
+    profile_type: str = "Adult",
     year: str = "",
     language: str = "",
     rating: str = "",
@@ -756,28 +757,49 @@ def search_movies(
     if df.empty:
         return []
         
+    # Profile Filtering
+    if profile_type == "Kids":
+        df = df[df["_genre_str"].str.contains("animation|children|family|children's", na=False)]
+    elif profile_type == "Family":
+        blocked = ["romance", "horror", "thriller", "crime", "mystery"]
+        df = df[~df["_genre_str"].str.contains('|'.join(blocked), na=False)]
+
+    # Search Logic
+    matches = pd.DataFrame()
     if query:
-        df = df[df["title"].str.contains(query, case=False, na=False)]
-    if year:
-        df = df[df["title"].str.contains(f"({year})", case=False, regex=False, na=False)]
-    if rating:
-        df = df[df["content_rating"] == rating]
-    if max_duration is not None and "duration" in df.columns:
-        df = df[df["duration"] <= max_duration]
-    if mood and "mood" in df.columns:
-        df = df[df["mood"].str.lower() == mood.lower()]
+        matches = df[df["title"].str.contains(query, case=False, na=False)]
+    
+    # Get initial result set
+    results = matches.head(20).to_dict('records')
+    
+    # Show Related Movies: if we have matches, add similar movies for the first match
+    if not matches.empty:
+        first_mid = int(matches.iloc[0]["movieId"])
+        similar_ids = rec_engine.get_similar_movies(first_mid, n=12)
         
-    # Simplified search limits
-    rows = list(df.head(20).iterrows())
-    return [{
-        "movieId": int(r["movieId"]),
-        "title": r["title"],
-        "genre": r.get("genres", "Drama").split("|")[0] if "genres" in r.index else "Drama",
-        "content_rating": r.get("content_rating", "PG-13"),
-        "duration": int(r["duration"]) if "duration" in r.index and pd.notna(r.get("duration")) else 120,
-        "mood": str(r["mood"]) if "mood" in r.index and pd.notna(r.get("mood")) else "Neutral",
-        "poster": poster_for_movie(r["movieId"]),
-    } for _, r in rows]
+        # Filter similar movies by profile too
+        similar_df = df[df["movieId"].isin(similar_ids)]
+        # Exclude those already in matches
+        similar_df = similar_df[~similar_df["movieId"].isin(matches["movieId"])]
+        
+        related = similar_df.to_dict('records')
+        results.extend(related)
+
+    # Map for frontend
+    final = []
+    for r in results[:30]:
+        genre = (
+            r["genre"] if "genre" in r and pd.notna(r.get("genre"))
+            else (str(r.get("genres") or "Drama").split("|")[0].strip() if "genres" in r else "Drama")
+        )
+        final.append({
+            "movieId": int(r["movieId"]),
+            "title": r["title"],
+            "genre": genre,
+            "content_rating": r.get("content_rating", "PG-13"),
+            "poster": poster_for_movie(r["movieId"]),
+        })
+    return final
 
 @app.get("/recommend/{user_id}")
 def recommend(
@@ -992,27 +1014,66 @@ import random
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 
 def search_movie_in_db(query: str) -> list:
-    """Search for movies matching the query in the CSV dataset."""
+    """Search for movies matching the query in the CSV dataset with fuzzy support."""
     df = _get_movies_df()
     if df.empty:
         return []
+    
     q = query.lower().strip()
+    # 1. Direct contains
     matches = df[df["title"].str.lower().str.contains(q, na=False)]
-    return [row.to_dict() for _, row in matches.head(5).iterrows()]
+    if not matches.empty:
+        return [row.to_dict() for _, row in matches.head(5).iterrows()]
+    
+    # 2. Fuzzy clean: remove hyphens, spaces, dots
+    def clean(s): return "".join(c for c in str(s).lower() if c.isalnum())
+    q_clean = clean(q)
+    if q_clean:
+        matches = df[df["title"].apply(lambda x: q_clean in clean(x))]
+        if not matches.empty:
+            return [row.to_dict() for _, row in matches.head(5).iterrows()]
+            
+    return []
 
 def get_movie_info_for_chat(title: str, movie_id: int = None) -> str:
-    """Get detailed movie info by scraping Google and checking local data."""
+    """Get rich movie info by combining local CSV data and Google search results."""
     from movie_details import fetch_cast_from_google
+    df = _get_movies_df()
     
+    # 1. Fetch local data from CSV
+    row = None
+    if movie_id:
+        match = df[df["movieId"] == movie_id]
+        if not match.empty:
+            row = match.iloc[0]
+    if row is None:
+        match = df[df["title"].str.lower().str.contains(title.lower(), na=False)]
+        if not match.empty:
+            row = match.iloc[0]
+            
+    genre = "Drama"
+    mood = "Neutral"
+    duration = 120
+    if row is not None:
+        raw_genre = str(row.get("genres") or row.get("genre") or "Drama")
+        genre = raw_genre.split("|")[0].strip()
+        mood = str(row.get("mood", "Neutral"))
+        duration = int(row.get("duration", 120)) if pd.notna(row.get("duration")) else 120
+    
+    # 2. Fetch cast/director from Google
     google_data = fetch_cast_from_google(title)
     cast_names = google_data.get("cast_names", [])
     director = google_data.get("director", "Unknown")
     
-    info_parts = [f"🎬 **{title}**"]
+    # 3. Format the final rich response
+    info_parts = [f"🎬 **{title.title()}**"]
+    info_parts.append(f"🎭 **Genre**: {genre}")
     if director and director != "Unknown":
-        info_parts.append(f"🎥 Director: {director}")
+        info_parts.append(f"🎥 **Director**: {director}")
     if cast_names:
-        info_parts.append(f"⭐ Cast: {', '.join(cast_names[:5])}")
+        info_parts.append(f"⭐ **Cast**: {', '.join(cast_names[:5])}")
+    info_parts.append(f"😊 **Mood**: {mood}")
+    info_parts.append(f"⏱️ **Duration**: {duration} min")
     
     return "\n".join(info_parts)
 
@@ -1023,62 +1084,37 @@ def handle_chat(data: ChatQuery):
         return {"reply": "Please ask a question about movies!"}
     
     msg = query.lower()
-    
-    # Greetings
-    if any(w in msg for w in ["hello", "hi", "hey", "namaste"]):
-        return {"reply": "Hey there! 🎬 I'm CINEMAX AI. Ask me about any movie — cast, director, genre, or get recommendations! Try 'Tell me about RRR' or 'Who acted in Dangal?'"}
-    
-    if "who are you" in msg or "what can you do" in msg:
-        return {"reply": "I'm CINEMAX AI! 🍿 I can tell you about movie cast, directors, genres, and even recommend movies based on mood. Try asking 'Cast of Baahubali' or 'Recommend a comedy'!"}
 
-    # Movie cast queries
-    cast_patterns = [
-        r"(?:cast|actors?|stars?|who (?:acted|starred|is) in|who are in)\s+(.+)",
-        r"(.+?)\s+(?:cast|actors?|stars?)",
-        r"tell me about (.+)",
-        r"info (?:about|on) (.+)",
-        r"details (?:about|of|on) (.+)",
+    # Friendly Chat / Conversational (Steer back to movies)
+    if any(w in msg for w in ["i need to chat", "how are you", "can we talk"]):
+        return {"reply": "I'm always up for a chat! 😊 As a cinematic assistant, I love talking about everything from the latest blockbusters to classic stars. What's on your mind? Or perhaps you'd like a movie recommendation?"}
+    
+    # Greetings & Identity
+    if any(w in msg for w in ["hello", "hi", "hey", "namaste", "hola"]):
+        return {"reply": "Hey! 👋 I'm **CINEMAX AI**. I'm here to talk about **movies and the stars** who bring them to life. What can I tell you about today?"}
+    
+    if any(w in msg for w in ["who are you", "what can you do", "help"]):
+        return {"reply": "I'm your **Cinematic Assistant**! 🍿 I specialize in movies and actors. Ask me 'Who directed Inception?' or 'Top movies of 2024'!"}
+
+    # Movie detail queries
+    detail_patterns = [
+        r"(?:tell me about|info about|show me|details? (?:of|about|on)|what is)\s+(.+)",
+        r"(?:cast|actors?|stars?|who (?:acted|starred|is) in|who are in|actress|actor)\s+(.+)",
+        r"(.+?)\s+(?:cast|actors?|stars?|details?)",
     ]
     
-    for pattern in cast_patterns:
+    for pattern in detail_patterns:
         match = re.search(pattern, msg)
         if match:
             movie_query = match.group(1).strip().strip("?.,!")
-            # Search in our database
+            # Avoid matching common words as movie titles
+            if movie_query.lower() in ["the actor", "the actress", "the star", "the movie", "this", "it"]:
+                continue
+            
             results = search_movie_in_db(movie_query)
             if results:
                 movie = results[0]
-                title = movie.get("title", movie_query)
-                movie_id = movie.get("movieId")
-                info = get_movie_info_for_chat(title, movie_id)
-                
-                extra = []
-                genre = movie.get("genre", movie.get("genres", ""))
-                if genre:
-                    extra.append(f"🎭 Genre: {genre}")
-                duration = movie.get("duration")
-                if duration and pd.notna(duration):
-                    extra.append(f"⏱️ Duration: {int(duration)} min")
-                mood = movie.get("mood")
-                if mood and pd.notna(mood):
-                    extra.append(f"😊 Mood: {mood}")
-                
-                full_info = info
-                if extra:
-                    full_info += "\n" + "\n".join(extra)
-                
-                return {"reply": full_info}
-            else:
-                # Try Google search anyway
-                from movie_details import fetch_cast_from_google
-                google_data = fetch_cast_from_google(movie_query)
-                if google_data["cast_names"]:
-                    parts = [f"🎬 **{movie_query.title()}**"]
-                    if google_data["director"]:
-                        parts.append(f"🎥 Director: {google_data['director']}")
-                    parts.append(f"⭐ Cast: {', '.join(google_data['cast_names'][:5])}")
-                    return {"reply": "\n".join(parts)}
-                return {"reply": f"I couldn't find '{movie_query}' in our database. Try searching with the exact movie title!"}
+                return {"reply": get_movie_info_for_chat(movie.get("title", movie_query), movie.get("movieId"))}
 
     # Director queries
     director_patterns = [
@@ -1095,10 +1131,9 @@ def handle_chat(data: ChatQuery):
                 from movie_details import fetch_cast_from_google
                 google_data = fetch_cast_from_google(title)
                 director = google_data.get("director", "Unknown")
-                return {"reply": f"🎥 {title} was directed by **{director}**"}
-            return {"reply": f"I couldn't find '{movie_query}'. Try the full movie name!"}
+                return {"reply": f"🎥 **{title}** was directed by **{director}**."}
 
-    # Mood-based recommendations
+    # Mood/Genre-based recommendations
     mood_keywords = {
         "happy": "happy", "comedy": "happy", "funny": "happy", "laugh": "happy",
         "sad": "sad", "emotional": "sad", "cry": "sad",
@@ -1108,7 +1143,7 @@ def handle_chat(data: ChatQuery):
         "relax": "relax", "chill": "relax", "calm": "relax",
     }
     
-    if any(w in msg for w in ["recommend", "suggest", "mood", "watch", "want to see"]):
+    if any(w in msg for w in ["recommend", "suggest", "mood", "watch", "want to see", "give me"]):
         detected_mood = None
         for keyword, mood_val in mood_keywords.items():
             if keyword in msg:
@@ -1121,49 +1156,41 @@ def handle_chat(data: ChatQuery):
                 filtered = df[df["mood"].str.lower() == detected_mood]
                 if not filtered.empty:
                     picks = filtered.sample(min(3, len(filtered)))
-                    titles = [r["title"] for _, r in picks.iterrows()]
-                    return {"reply": f"For a **{detected_mood}** mood, I recommend:\n🎬 " + "\n🎬 ".join(titles) + "\n\nClick on any movie poster on the homepage to see full details!"}
+                    list_str = "\n".join([f"• **{r['title']}**" for _, r in picks.iterrows()])
+                    return {"reply": f"For a **{detected_mood}** vibe, try these movies:\n{list_str}"}
             
-            # Random recommendations
+            # Random general recommendations
             picks = df.sample(min(3, len(df)))
-            titles = [r["title"] for _, r in picks.iterrows()]
-            return {"reply": "Here are some picks for you:\n🎬 " + "\n🎬 ".join(titles) + "\n\nTell me your mood (happy, thrill, romantic, scary) for better recommendations!"}
-
-    # Genre queries
-    genre_keywords = ["action", "comedy", "drama", "horror", "romance", "thriller", "animation", "sci-fi", "fantasy", "adventure"]
-    for genre in genre_keywords:
-        if genre in msg and any(w in msg for w in ["movie", "film", "show", "list", "best"]):
-            df = _get_movies_df()
-            if not df.empty:
-                genre_col = "genre" if "genre" in df.columns else "genres"
-                filtered = df[df[genre_col].str.lower().str.contains(genre, na=False)]
-                if not filtered.empty:
-                    picks = filtered.sample(min(3, len(filtered)))
-                    titles = [r["title"] for _, r in picks.iterrows()]
-                    return {"reply": f"Top **{genre.title()}** movies:\n🎬 " + "\n🎬 ".join(titles)}
+            list_str = "\n".join([f"• **{r['title']}**" for _, r in picks.iterrows()])
+            return {"reply": f"I've got some great movie recommendations for you! 🎬\n{list_str}\n\nAsk me about a specific movie or star!"}
 
     # Direct movie title search as last resort
     results = search_movie_in_db(msg.strip("?.,!"))
     if results:
         movie = results[0]
-        title = movie.get("title", msg)
-        info = get_movie_info_for_chat(title, movie.get("movieId"))
-        genre = movie.get("genre", movie.get("genres", ""))
-        if genre:
-            info += f"\n🎭 Genre: {genre}"
-        return {"reply": info}
+        return {"reply": get_movie_info_for_chat(movie.get("title", msg), movie.get("movieId"))}
 
-    # Gemini fallback if available
+    # Actor/Actress fallback
+    actor_keywords = ["actor", "actress", "star", "acted", "cast", "hero", "heroine"]
+    if any(k in msg for k in actor_keywords):
+        return {"reply": "I'd love to tell you about that star! 🌟 Could you please specify which **movie** you are referring to? (e.g., 'Who is the actor in Spider-Man?')" }
+
+    # Gemini fallback strictly for movies/actors
     if GEMINI_API_KEY and genai:
         try:
             genai.configure(api_key=GEMINI_API_KEY)
             model = genai.GenerativeModel('gemini-1.5-flash')
-            system_prompt = "You are CINEMAX AI, an expert cinematic assistant embedded in a movie streaming platform. Keep answers brief (max 3 sentences), use emojis, and be perfectly accurate about movies, directors, and casting."
+            system_prompt = (
+                "You are CINEMAX AI. You ONLY discuss movies, actors, and actresses. "
+                "If a user asks to chat generally, be friendly for ONE sentence but steer back to movies. "
+                "If a user asks about anything else (math, politics), politely say you only talk about cinema. "
+                "Keep answers brief (max 2 sentences) and include emojis."
+            )
             response = model.generate_content(f"{system_prompt}\nUser Question: {query}")
             return {"reply": response.text.strip()}
         except Exception as e:
-            print(f"Gemini API Error: {e}")
+            pass
 
-    # Final fallback
-    return {"reply": f"I'm not sure about that. Try asking me:\n• 'Tell me about RRR'\n• 'Cast of Baahubali'\n• 'Recommend a comedy'\n• 'Who directed Inception?'\n• 'Action movies'"}
+    # Final Movie-focused fallback
+    return {"reply": "I'm only here for the movies! 🎬 Ask me about:\n• 'Tell me about Spider-Man'\n• 'Who starred in Interstellar?'\n• 'Recommend a comedy movie'"}
 

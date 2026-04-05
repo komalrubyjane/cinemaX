@@ -176,6 +176,31 @@ const discoverSlice = createSlice({
 export const { setNextPage, initiateItem } = discoverSlice.actions;
 export default discoverSlice.reducer;
 
+const filterMoviesByProfile = (movies: any[]) => {
+  try {
+    const activeProfileRaw = localStorage.getItem("activeProfile");
+    if (!activeProfileRaw) return movies;
+    const activeProfile = JSON.parse(activeProfileRaw);
+    const profileType = activeProfile.type || "Adult";
+
+    if (profileType === "Kids") {
+      // 16 is Animation, 10751 is Family
+      return movies.filter(m => (m.genre_ids?.includes(16) || m.genre_ids?.includes(10751)));
+    }
+    if (profileType === "Family") {
+      // Exclude Romance(10749), Horror(27), Thriller(53), Crime(80), Mystery(9648)
+      const blocked = [10749, 27, 53, 80, 9648];
+      return movies.filter(m => {
+        const ids = m.genre_ids || [];
+        return !ids.some((id: number) => blocked.includes(id));
+      });
+    }
+  } catch (e) {
+    console.error("Filter movies error:", e);
+  }
+  return movies;
+};
+
 const extendedApi = tmdbApi.injectEndpoints({
   endpoints: (build) => ({
     getVideosByMediaTypeAndGenreId: build.query<
@@ -195,6 +220,7 @@ const extendedApi = tmdbApi.injectEndpoints({
         { mediaType, genreId }
       ) => ({
         ...response,
+        results: filterMoviesByProfile(response.results),
         mediaType,
         itemKey: genreId,
       }),
@@ -213,7 +239,16 @@ const extendedApi = tmdbApi.injectEndpoints({
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
             
-            const res = await fetch(`/recommend/1`, { 
+            const activeProfileRaw = localStorage.getItem("activeProfile");
+            const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { _id: "1", type: "Adult" };
+            const profileId = activeProfile._id || "1";
+            const profileType = activeProfile.type || "Adult";
+            
+            const isFamily = profileType === "Family" ? "true" : "false";
+            const isKids = profileType === "Kids" ? "true" : "false";
+            const age = profileType === "Kids" ? 10 : (profileType === "Family" ? 12 : 18);
+
+            const res = await fetch(`/recommend/${profileId}?age=${age}&family=${isFamily}&children=${isKids}`, { 
               signal: controller.signal 
             });
             clearTimeout(timeoutId);
@@ -238,7 +273,7 @@ const extendedApi = tmdbApi.injectEndpoints({
             return {
               data: {
                 page: 1,
-                results: mappedResults,
+                results: filterMoviesByProfile(mappedResults),
                 total_pages: 1,
                 total_results: mappedResults.length,
                 mediaType: arg.mediaType,
@@ -261,6 +296,7 @@ const extendedApi = tmdbApi.injectEndpoints({
               return {
                 data: {
                   ...(result.data as any),
+                  results: filterMoviesByProfile((result.data as any).results),
                   mediaType: arg.mediaType,
                   itemKey: arg.apiString,
                 }
@@ -305,6 +341,7 @@ const extendedApi = tmdbApi.injectEndpoints({
         return {
           data: {
             ...(result.data as any),
+            results: filterMoviesByProfile((result.data as any).results),
             mediaType: arg.mediaType,
             itemKey: arg.apiString,
           }
@@ -372,7 +409,12 @@ const extendedApi = tmdbApi.injectEndpoints({
           };
         }
         
-        return { data: result.data as PaginatedMovieResult };
+        return { 
+          data: {
+            ...((result.data as any) || {}),
+            results: filterMoviesByProfile((result.data as any)?.results || [])
+          } as PaginatedMovieResult 
+        };
       }
     }),
   }),

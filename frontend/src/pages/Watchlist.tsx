@@ -9,7 +9,11 @@ export function Component() {
 
   // Simple interval to refresh watchlist from localStorage in case it changes
   useEffect(() => {
-    const list = JSON.parse(localStorage.getItem('watchlist') || '[]');
+    const userId = localStorage.getItem("userId") || "1";
+    const activeProfileRaw = localStorage.getItem("activeProfile");
+    const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { _id: "1" };
+    const listKey = `watchlist_${userId}_${activeProfile._id || '1'}`;
+    const list = JSON.parse(localStorage.getItem(listKey) || '[]');
     setWatchlist(list);
   }, []);
 

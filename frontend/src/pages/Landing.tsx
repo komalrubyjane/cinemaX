@@ -162,38 +162,48 @@ export function Component() {
         </form>
       </section>
 
-      <footer className="footer-links-section">
-        <div className="footer-contact">
-          Questions? Call <a href="tel:0008009191743">000-800-919-1743</a>
+      <footer className="footer-links-section" style={{ paddingBottom: '40px' }}>
+        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px', marginBottom: '40px' }}>
+          <div className="footer-col about">
+            <h3 style={{ color: '#0071eb', fontWeight: 900, marginBottom: '20px' }}>CINEMAX</h3>
+            <p style={{ color: '#555', lineHeight: '1.6', fontSize: '0.9rem' }}>
+              CINEMAX is the ultimate destination for curated cinematic excellence. 
+              Powered by state-of-the-art AI, we define the future of how you watch, 
+              interact, and enjoy movies with your friends and family.
+            </p>
+          </div>
+          
+          <div className="footer-col links">
+            <h4 style={{ color: '#141414', fontWeight: 700, marginBottom: '20px' }}>Quick Links</h4>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <li><a href="#" style={{ color: '#555', textDecoration: 'none', fontSize: '0.9rem' }}>FAQ</a></li>
+              <li><a href="#" style={{ color: '#555', textDecoration: 'none', fontSize: '0.9rem' }}>Help Center</a></li>
+              <li><a href="#" style={{ color: '#555', textDecoration: 'none', fontSize: '0.9rem' }}>Terms of Use</a></li>
+              <li><a href="#" style={{ color: '#555', textDecoration: 'none', fontSize: '0.9rem' }}>Privacy Policy</a></li>
+            </ul>
+          </div>
+          
+          <div className="footer-col contact">
+            <h4 style={{ color: '#141414', fontWeight: 700, marginBottom: '20px' }}>Contact</h4>
+            <p style={{ color: '#555', fontSize: '0.9rem', marginBottom: '10px' }}>Questions? Call 000-800-919-1743</p>
+            <div className="footer-language-selector" style={{ marginTop: '20px' }}>
+              <select style={{ padding: '8px 12px', borderRadius: '4px', border: '1px solid #ccc' }}>
+                <option>English</option>
+                <option>हिन्दी</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <ul className="footer-links-list">
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Help Center</a></li>
-          <li><a href="#">Account</a></li>
-          <li><a href="#">Media Center</a></li>
-          <li><a href="#">Investor Relations</a></li>
-          <li><a href="#">Jobs</a></li>
-          <li><a href="#">Ways to Watch</a></li>
-          <li><a href="#">Terms of Use</a></li>
-          <li><a href="#">Privacy</a></li>
-          <li><a href="#">Cookie Preferences</a></li>
-          <li><a href="#">Corporate Information</a></li>
-          <li><a href="#">Contact Us</a></li>
-          <li><a href="#">Speed Test</a></li>
-          <li><a href="#">Legal Notices</a></li>
-          <li><a href="#">Only on CINEMAX</a></li>
-        </ul>
+        <div className="border-divider" style={{ margin: '20px 0', opacity: 0.2 }}></div>
 
-        <div className="footer-language-selector">
-          <select>
-            <option>English</option>
-            <option>हिन्दी</option>
-          </select>
-        </div>
-
-        <div className="footer-copy">
-          <b>CINEMAX India</b>
+        <div className="footer-bottom" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.7 }}>
+          <div className="footer-copy">
+            <b>CINEMAX India</b>
+          </div>
+          <div className="footer-copyright" style={{ fontSize: '0.8rem' }}>
+            © 2026 CINEMAX India. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>

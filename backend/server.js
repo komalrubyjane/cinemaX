@@ -54,13 +54,81 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', service: 'CINEMAX Backend' });
 });
 
+// Watch Party Room Storage
+const ROOMS = {};
+
+// Watch Party Room Creation
+app.post('/api/ai/party/create', (req, res) => {
+    const { movie_id } = req.query;
+    const roomId = 'PARTY_' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    // Store room data
+    ROOMS[roomId] = {
+        movie_id: movie_id,
+        created_at: new Date()
+    };
+    
+    console.log(`Created new Watch Party room: ${roomId} for movie: ${movie_id}`);
+    res.json({ room_id: roomId, movie_id: movie_id });
+});
+
+app.get('/api/ai/party/:roomId', (req, res) => {
+    const { roomId } = req.params;
+    const room = ROOMS[roomId];
+    if (room) {
+        res.json(room);
+    } else {
+        res.status(404).json({ error: "Room not found" });
+    }
+});
+
 // Socket.io for Watch Party
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('join_room', (roomId) => {
+    socket.on('join_room', ({ roomId, username }) => {
         socket.join(roomId);
-        console.log(`User ${socket.id} joined room ${roomId}`);
+        console.log(`User ${username} (${socket.id}) joined room ${roomId}`);
+        
+        io.in(roomId).emit('message', {
+            type: 'system',
+            message: `${username} joined the party! 🎉`
+        });
+    });
+
+    socket.on('chat', ({ roomId, username, text }) => {
+        io.in(roomId).emit('message', {
+            type: 'chat',
+            sender: username,
+            text: text
+        });
+    });
+
+    socket.on('play', ({ roomId, timestamp, username }) => {
+        socket.to(roomId).emit('sync', {
+            action: 'play',
+            status: 'playing',
+            timestamp: timestamp,
+            username: username
+        });
+    });
+
+    socket.on('pause', ({ roomId, timestamp, username }) => {
+        socket.to(roomId).emit('sync', {
+            action: 'pause',
+            status: 'paused',
+            timestamp: timestamp,
+            username: username
+        });
+    });
+
+    socket.on('seek', ({ roomId, timestamp, username }) => {
+        socket.to(roomId).emit('sync', {
+            action: 'seek',
+            status: 'paused', // Usually paused when seeking manually
+            timestamp: timestamp,
+            username: username
+        });
     });
 
     socket.on('disconnect', () => {

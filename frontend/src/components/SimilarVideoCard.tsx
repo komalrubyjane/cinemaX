@@ -20,14 +20,24 @@ export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
   const { data: configuration } = useGetConfigurationQuery(undefined);
 
   const [inList, setInList] = useState(() => {
-    const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+    const userId = localStorage.getItem("userId") || "1";
+    const activeProfileRaw = localStorage.getItem("activeProfile");
+    const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { _id: "1" };
+    const listKey = `watchlist_${userId}_${activeProfile._id || '1'}`;
+    const cur = JSON.parse(localStorage.getItem(listKey) || '[]');
     return cur.some((m: any) => m.id === video.id);
   });
 
-  const handleAddToList = () => {
-    const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+  const handleAddToList = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening modal when clicking the add button
+    const userId = localStorage.getItem("userId") || "1";
+    const activeProfileRaw = localStorage.getItem("activeProfile");
+    const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { _id: "1" };
+    const listKey = `watchlist_${userId}_${activeProfile._id || '1'}`;
+    
+    const cur = JSON.parse(localStorage.getItem(listKey) || '[]');
     if (inList) {
-      localStorage.setItem('watchlist', JSON.stringify(cur.filter((m: any) => m.id !== video.id)));
+      localStorage.setItem(listKey, JSON.stringify(cur.filter((m: any) => m.id !== video.id)));
       setInList(false);
     } else {
       cur.push({
@@ -38,7 +48,7 @@ export default function SimilarVideoCard({ video }: SimilarVideoCardProps) {
         overview: video.overview,
         release_date: video.release_date,
       });
-      localStorage.setItem('watchlist', JSON.stringify(cur));
+      localStorage.setItem(listKey, JSON.stringify(cur));
       setInList(true);
     }
   };

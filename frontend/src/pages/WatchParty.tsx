@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReactPlayer from "react-player";
 const Player: any = ReactPlayer;
 import { TMDB_V3_API_KEY } from "src/constant";
+import { io } from "socket.io-client";
 
 interface ChatMessage {
   type: "chat" | "system";
@@ -40,71 +41,64 @@ export function Component() {
   const playerRef = useRef<any>(null);
   const isInternalChange = useRef(false);
 
-  const wsRef = useRef<WebSocket | null>(null);
+  const socketRef = useRef<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const username = localStorage.getItem("username")?.split("@")[0] || "User_" + Math.random().toString(36).substring(2, 6);
   const partyLink = `${window.location.origin}/party/${roomId}`;
 
   useEffect(() => {
-    // Add welcome system message immediately
-    setMessages([
-      {
-        type: "system",
-        message: `Welcome to Watch Party room "${roomId}"! Share the link to invite friends.`,
-      },
-    ]);
+    // Add initial system message
+    setMessages([{ type: "system", message: `Welcome ${username}! Share this link to start some popcorn 🍿` }]);
 
-    // Try to connect WebSocket (gracefully handle failure)
-    try {
-      const wsUrl = `ws://127.0.0.1:8000/api/party/ws/${roomId}?username=${encodeURIComponent(username)}`;
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
+    // Connect to Socket.IO backend
+    const BACKEND_URL = window.location.hostname === 'localhost' ? 'http://localhost:5001' : 'https://cinematch-backend-production.up.railway.app'; // Change as needed
+    const socket = io(BACKEND_URL);
+    socketRef.current = socket;
 
-      ws.onopen = () => {
-        setConnected(true);
-        setMessages((prev) => [
-          ...prev,
-          { type: "system", message: `${username} joined the party 🎉` },
-        ]);
-      };
+    socket.on('connect', () => {
+      setConnected(true);
+      // Fetch room details to know which movie to play
+      fetch(`/api/ai/party/${roomId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.movie_id) {
+                setMovieId(String(data.movie_id));
+            }
+        });
+      socket.emit('join_room', { roomId, username });
+    });
 
-      ws.onclose = () => setConnected(false);
+    socket.on('disconnect', () => setConnected(false));
 
-      ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.type === "chat") {
-          setMessages((prev) => [
-            ...prev,
-            { type: "chat", sender: data.sender, text: data.text },
-          ]);
-        } else if (data.type === "system") {
-          setMessages((prev) => [
-            ...prev,
-            { type: "system", message: data.message },
-          ]);
-          if (data.participants) setParticipants(data.participants);
-          if (data.state) {
-            setPlaybackStatus(data.state.status);
-            setProgress(data.state.timestamp);
-            if (data.state.movie_id) setMovieId(String(data.state.movie_id));
+    socket.on('message', (msg: any) => {
+      setMessages(prev => [...prev, msg]);
+    });
+
+    socket.on('sync', (data: any) => {
+      console.log('Received sync event:', data);
+      isInternalChange.current = true;
+      
+      if (data.action === 'play') {
+          setPlaybackStatus('playing');
+          if (Math.abs(progress - data.timestamp) > 2) {
+              playerRef.current?.seekTo(data.timestamp, 'seconds');
           }
-        } else if (data.type === "sync") {
-          isInternalChange.current = true;
-          setPlaybackStatus(data.status);
+      } else if (data.action === 'pause') {
+          setPlaybackStatus('paused');
+          playerRef.current?.seekTo(data.timestamp, 'seconds');
+      } else if (data.action === 'seek') {
           setProgress(data.timestamp);
-          if (playerRef.current) {
-            playerRef.current.seekTo(data.timestamp, "seconds");
-          }
-          setTimeout(() => { isInternalChange.current = false; }, 500);
-        }
-      };
+          playerRef.current?.seekTo(data.timestamp, 'seconds');
+      }
+      
+      setTimeout(() => { isInternalChange.current = false; }, 800);
+    });
 
-      return () => ws.close();
-    } catch {
-      // WebSocket unavailable — run in demo mode
-    }
-  }, [roomId]);
+    return () => {
+      socket.disconnect();
+    };
+  }, [roomId, username]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -129,19 +123,19 @@ export function Component() {
   const handlePlay = () => {
     if (isInternalChange.current) return;
     setPlaybackStatus("playing");
-    wsRef.current?.send(JSON.stringify({ action: "play", status: "playing", timestamp: progress }));
+    socketRef.current?.emit("play", { roomId, timestamp: progress, username });
   };
 
   const handlePause = () => {
     if (isInternalChange.current) return;
     setPlaybackStatus("paused");
-    wsRef.current?.send(JSON.stringify({ action: "pause", status: "paused", timestamp: progress }));
+    socketRef.current?.emit("pause", { roomId, timestamp: progress, username });
   };
 
   const handleSeek = (value: number) => {
     if (isInternalChange.current) return;
     setProgress(value);
-    wsRef.current?.send(JSON.stringify({ action: "seek", status: playbackStatus, timestamp: value }));
+    socketRef.current?.emit("seek", { roomId, timestamp: value, username });
   };
 
   useEffect(() => {
@@ -158,8 +152,8 @@ export function Component() {
     if (!chatInput.trim()) return;
     const msg = chatInput.trim();
     setChatInput("");
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ action: "chat", text: msg }));
+    if (socketRef.current?.connected) {
+      socketRef.current.emit("chat", { roomId, username, text: msg });
     } else {
       // Demo mode — show locally
       setMessages((prev) => [
@@ -172,9 +166,10 @@ export function Component() {
   const togglePlay = () => {
     const newStatus = playbackStatus === "playing" ? "paused" : "playing";
     setPlaybackStatus(newStatus);
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(
-        JSON.stringify({ action: newStatus === "playing" ? "play" : "pause", status: newStatus, timestamp: progress })
+    if (socketRef.current?.connected) {
+      socketRef.current.emit(
+        newStatus === "playing" ? "play" : "pause",
+        { roomId, timestamp: progress, username }
       );
     }
     setMessages((prev) => [
@@ -189,8 +184,8 @@ export function Component() {
   const seek = (value: number) => {
     setProgress(value);
     playerRef.current?.seekTo(value, "seconds");
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ action: "seek", status: playbackStatus, timestamp: value }));
+    if (socketRef.current?.connected) {
+      socketRef.current.emit("seek", { roomId, timestamp: value, username });
     }
   };
 

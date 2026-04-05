@@ -211,10 +211,15 @@ export default function DetailModal() {
                     sx={{ borderColor: '#141414', "&:hover": { transform: 'scale(1.1)' } }}
                     onClick={() => {
                       if (!detail.mediaDetail) return;
-                      const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+                      const userId = localStorage.getItem("userId") || "1";
+                      const activeProfileRaw = localStorage.getItem("activeProfile");
+                      const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { _id: "1" };
+                      const listKey = `watchlist_${userId}_${activeProfile._id || '1'}`;
+                      
+                      const cur = JSON.parse(localStorage.getItem(listKey) || '[]');
                       const exists = cur.find((m: any) => m.id === detail.mediaDetail?.id);
                       if (exists) {
-                        localStorage.setItem('watchlist', JSON.stringify(cur.filter((m: any) => m.id !== detail.mediaDetail?.id)));
+                        localStorage.setItem(listKey, JSON.stringify(cur.filter((m: any) => m.id !== detail.mediaDetail?.id)));
                         setDetailType({ ...detail }); 
                       } else {
                         cur.push({
@@ -224,13 +229,17 @@ export default function DetailModal() {
                           backdrop_path: detail.mediaDetail.backdrop_path,
                           overview: detail.mediaDetail.overview
                         });
-                        localStorage.setItem('watchlist', JSON.stringify(cur));
+                        localStorage.setItem(listKey, JSON.stringify(cur));
                         setDetailType({ ...detail }); 
                       }
                     }}
                   >
                     <AddIcon sx={{ color: (() => {
-                      const cur = JSON.parse(localStorage.getItem('watchlist') || '[]');
+                      const userId = localStorage.getItem("userId") || "1";
+                      const activeProfileRaw = localStorage.getItem("activeProfile");
+                      const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { _id: "1" };
+                      const listKey = `watchlist_${userId}_${activeProfile._id || '1'}`;
+                      const cur = JSON.parse(localStorage.getItem(listKey) || '[]');
                       return cur.find((m: any) => m.id === detail.mediaDetail?.id) ? '#87CEEB' : '#141414';
                     })() }} />
                   </NetflixIconButton>

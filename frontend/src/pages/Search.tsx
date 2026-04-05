@@ -14,7 +14,12 @@ export function Component() {
   useEffect(() => {
     if (!query) return;
     setLoading(true);
-    fetch(`/api/ai/search?query=${encodeURIComponent(query)}`)
+    
+    const activeProfileRaw = localStorage.getItem("activeProfile");
+    const activeProfile = activeProfileRaw ? JSON.parse(activeProfileRaw) : { type: "Adult" };
+    const profileType = activeProfile.type || "Adult";
+
+    fetch(`/api/ai/search?query=${encodeURIComponent(query)}&profile_type=${profileType}`)
       .then(res => res.json())
       .then(data => {
         // Map backend format to TMDB format for the SimilarVideoCard
