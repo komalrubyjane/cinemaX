@@ -18,4 +18,4 @@ Write-Host "AI Engine: http://localhost:8000"
 npx concurrently -c "green,cyan,magenta" -n "frontend,backend,ai_engine" `
     "cd frontend && npm run dev" `
     "cd backend && node server.js" `
-    "cd ai_engine && ..\.venv\Scripts\python.exe -m uvicorn app:app --reload --port 8000"
+    "cd ai_engine && ..\.venv\Scripts\python.exe -X utf8 -m uvicorn app:app --reload --port 8000"

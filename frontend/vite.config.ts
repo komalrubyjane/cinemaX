@@ -9,30 +9,31 @@ export default defineConfig({
     chunkSizeWarningLimit: 2000,
   },
   server: {
+    port: 3000,
     proxy: {
-      // Node.js backend routes → port 5001
+      // Node.js backend routes → port 5000
       '/api/auth': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
       '/api/backend': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
       '/api/profiles': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
       '/api/movies': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
       '/api/health': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
       '/api/ai/party': {
-        target: 'http://127.0.0.1:5001',
+        target: 'http://127.0.0.1:5000',
         changeOrigin: true,
       },
       // Python AI engine routes → port 8000
